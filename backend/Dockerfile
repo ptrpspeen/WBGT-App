@@ -22,6 +22,6 @@ COPY app_prototype /app/app_prototype
 COPY examples /app/examples
 COPY README.md /app/README.md
 
-EXPOSE 8000
+EXPOSE 10000
 
-CMD ["Rscript", "-e", "pr <- plumber::plumb('/app/plumber.R'); pr$run(host = '0.0.0.0', port = 8000)"]
+CMD ["Rscript", "-e", "port <- as.integer(Sys.getenv('PORT', '10000')); pr <- plumber::plumb('/app/plumber.R'); pr$run(host = '0.0.0.0', port = port)"]

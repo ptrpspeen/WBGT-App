@@ -3,6 +3,8 @@ services:
     build:
       context: ./backend
     container_name: wbgt-r-api
+    environment:
+      PORT: 8000
     ports:
       - "8000:8000"
     volumes:
