@@ -49,7 +49,163 @@ const DEFAULT_COORDINATES = {
 
 const WBGT_API_BASE_URL = (import.meta.env.VITE_WBGT_API_BASE_URL ?? "https://wbgt-app-49xb.onrender.com").replace(/\/$/, "");
 const HISTORY_STORAGE_KEY = "wbgt-risk-history";
+const LANGUAGE_STORAGE_KEY = "wbgt-ui-language";
 const MAX_HISTORY_ITEMS = 20;
+
+const translations = {
+  th: {
+    appTitle: "ประเมินความเสี่ยงจากความร้อนกลางแจ้ง",
+    aboutLabel: "เกี่ยวกับแอป",
+    aboutText: "ระบบช่วยประเมินความเสี่ยงจากความร้อนกลางแจ้ง โดยใช้ข้อมูลสภาพอากาศตามตำแหน่งและเวลาที่เลือก",
+    setupEyebrow: "ตั้งค่าการประเมิน",
+    setupTitle: "เลือกพื้นที่และกิจกรรม",
+    fillInfo: "กรอกข้อมูล",
+    evaluating: "กำลังประเมิน",
+    evaluated: "ประเมินเสร็จแล้ว",
+    evaluationFailed: "ประเมินไม่สำเร็จ",
+    evaluationError: "ไม่สามารถประเมินผลได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง",
+    location: "เลือกพื้นที่",
+    useCurrentLocation: "ใช้ตำแหน่งปัจจุบัน",
+    chooseOnMap: "เลือกบนแผนที่",
+    currentLocation: "ตำแหน่งปัจจุบัน",
+    gpsReady: "ใช้พิกัด GPS ปัจจุบัน",
+    gpsPrompt: "กดเพื่อขออนุญาตใช้ GPS จากเบราว์เซอร์",
+    currentCoordinates: "พิกัดปัจจุบัน",
+    gpsAccuracy: "ความแม่นยำ GPS ประมาณ",
+    gpsIdle: "ระบบจะใช้ตำแหน่งจากอุปกรณ์เพื่อแสดงข้อมูลอากาศและประเมินความเสี่ยง",
+    gpsLoading: "กำลังขอตำแหน่งจากอุปกรณ์...",
+    updateGps: "อัปเดต GPS",
+    useGpsNow: "ใช้ GPS ตอนนี้",
+    mapHint: "แตะบนแผนที่เพื่อเลือกตำแหน่ง ระบบจะอัปเดตข้อมูลอากาศตามพิกัดนี้ทันที",
+    dateTime: "วันและเวลา",
+    bangkokTime: "เวลา Asia/Bangkok",
+    weather: "ข้อมูลสภาพอากาศ",
+    selectedCoordinates: "พิกัดที่เลือก",
+    gpsCoordinates: "ตำแหน่ง GPS ปัจจุบัน",
+    waitingCoordinates: "รอพิกัด",
+    weatherForLocation: "ข้อมูลอากาศตามตำแหน่งที่เลือก",
+    atTime: "เวลา",
+    preparingData: "กำลังเตรียมข้อมูล",
+    dataReady: "ข้อมูลพร้อม",
+    noData: "ไม่พบข้อมูล",
+    waitingArea: "รอพื้นที่",
+    preparingWeather: "กำลังเตรียมข้อมูลสภาพอากาศ...",
+    clothingType: "ประเภทเสื้อผ้า",
+    cafInfoLabel: "ข้อมูล CAF",
+    cafInfo: "CAF ใช้ปรับค่า WBGT ตามผลของเสื้อผ้าต่อการระบายความร้อนของร่างกาย",
+    activityLevel: "ระดับกิจกรรม",
+    evaluateButton: "ดูผลการประเมิน",
+    waitWeather: "รอข้อมูลสภาพอากาศ",
+    noResult: "ยังไม่มีผลการประเมิน",
+    noResultHelp: "เลือกพื้นที่ วันเวลา ประเภทเสื้อผ้า และระดับกิจกรรม จากนั้นกด “ดูผลการประเมิน” เพื่อให้ระบบประมวลผล",
+    summary: "สรุป",
+    chart: "กราฟ",
+    advice: "คำแนะนำ",
+    overallRisk: "ระดับความเสี่ยงโดยรวม",
+    low: "ต่ำ",
+    moderate: "ปานกลาง",
+    high: "สูง",
+    veryHigh: "สูงมาก",
+    model: "โมเดล",
+    clothingCaf: "WBGT + CAF เสื้อผ้า",
+    feelsLike: "อุณหภูมิที่รู้สึก",
+    compareIndexes: "เปรียบเทียบค่าดัชนี",
+    value: "ค่า",
+    todayTrend: "แนวโน้มวันนี้",
+    today: "วันนี้",
+    safetyAdvice: "คำแนะนำเพื่อความปลอดภัย",
+    basedOnRisk: "อ้างอิงระดับความเสี่ยง",
+    details: "ดูรายละเอียดเพิ่มเติม",
+    historyLocal: "ประวัติในเครื่องนี้",
+    historyTitle: "ประวัติการประเมิน",
+    clear: "ล้าง",
+    noHistory: "ยังไม่มีประวัติ",
+    noHistoryHelp: "เมื่อกดดูผลการประเมิน ระบบจะบันทึกผลล่าสุดไว้ในอุปกรณ์นี้ด้วย localStorage",
+    assess: "ประเมิน",
+    history: "ประวัติ",
+    footerOrg: "เครือข่ายวิจัยระบบประเมินความเสี่ยงจากความร้อน",
+    footerContact: "ติดต่อทีมวิจัย: heat-risk@example.org",
+    gpsSource: "GPS ปัจจุบัน",
+    mapSource: "เลือกบนแผนที่",
+    weatherError: "ไม่สามารถเตรียมข้อมูลสภาพอากาศได้",
+  },
+  en: {
+    appTitle: "Outdoor Heat Risk Assessment",
+    aboutLabel: "About",
+    aboutText: "This tool estimates outdoor heat risk using weather data for the selected location and time.",
+    setupEyebrow: "Assessment Setup",
+    setupTitle: "Select Location and Activity",
+    fillInfo: "Enter details",
+    evaluating: "Evaluating",
+    evaluated: "Assessment complete",
+    evaluationFailed: "Assessment failed",
+    evaluationError: "Unable to complete the assessment right now. Please try again.",
+    location: "Location",
+    useCurrentLocation: "Use current location",
+    chooseOnMap: "Choose on map",
+    currentLocation: "Current location",
+    gpsReady: "Using current GPS coordinates",
+    gpsPrompt: "Tap to allow browser GPS access",
+    currentCoordinates: "Current coordinates",
+    gpsAccuracy: "Estimated GPS accuracy",
+    gpsIdle: "Your device location will be used to show weather data and estimate risk.",
+    gpsLoading: "Requesting device location...",
+    updateGps: "Update GPS",
+    useGpsNow: "Use GPS now",
+    mapHint: "Tap the map to choose a location. Weather data will update for this coordinate.",
+    dateTime: "Date and Time",
+    bangkokTime: "Asia/Bangkok time",
+    weather: "Weather Data",
+    selectedCoordinates: "Selected coordinates",
+    gpsCoordinates: "Current GPS location",
+    waitingCoordinates: "Waiting for coordinates",
+    weatherForLocation: "Weather data for selected location",
+    atTime: "Time",
+    preparingData: "Preparing data",
+    dataReady: "Data ready",
+    noData: "No data",
+    waitingArea: "Waiting for location",
+    preparingWeather: "Preparing weather data...",
+    clothingType: "Clothing Type",
+    cafInfoLabel: "CAF information",
+    cafInfo: "CAF adjusts WBGT based on how clothing affects body heat dissipation.",
+    activityLevel: "Activity Level",
+    evaluateButton: "View Assessment",
+    waitWeather: "Waiting for weather data",
+    noResult: "No assessment yet",
+    noResultHelp: "Select location, date/time, clothing type, and activity level, then tap “View Assessment”.",
+    summary: "Summary",
+    chart: "Chart",
+    advice: "Advice",
+    overallRisk: "Overall Risk Level",
+    low: "Low",
+    moderate: "Moderate",
+    high: "High",
+    veryHigh: "Very High",
+    model: "Model",
+    clothingCaf: "WBGT + clothing CAF",
+    feelsLike: "Feels-like temperature",
+    compareIndexes: "Index Comparison",
+    value: "Value",
+    todayTrend: "Today Trend",
+    today: "Today",
+    safetyAdvice: "Safety Advice",
+    basedOnRisk: "Based on risk level",
+    details: "View more details",
+    historyLocal: "Local history",
+    historyTitle: "Assessment History",
+    clear: "Clear",
+    noHistory: "No history yet",
+    noHistoryHelp: "After an assessment, the latest result will be saved on this device with localStorage.",
+    assess: "Assess",
+    history: "History",
+    footerOrg: "Heat Risk Assessment Research Network",
+    footerContact: "Contact: heat-risk@example.org",
+    gpsSource: "Current GPS",
+    mapSource: "Selected on map",
+    weatherError: "Unable to prepare weather data.",
+  },
+};
 
 const MAP_MARKER_ICON = L.divIcon({
   className: "map-pin-marker",
@@ -62,35 +218,45 @@ const clothingOptions = [
   {
     id: "light_clothing",
     label: "เสื้อผ้าเบา",
+    labelEn: "Light Clothing",
     example: "เสื้อยืด กางเกงขาสั้น",
+    exampleEn: "T-shirt, shorts",
     caf: 0,
     icon: Shirt,
   },
   {
     id: "long_thick",
     label: "แขนยาว/ผ้าหนา",
+    labelEn: "Long Sleeve / Thick Clothing",
     example: "เสื้อแขนยาว กางเกงขายาว",
+    exampleEn: "Long sleeves, long pants",
     caf: 1,
     icon: Layers,
   },
   {
     id: "work_coverall",
     label: "ชุดทำงาน/ชุดคลุม",
+    labelEn: "Work Clothing / Coverall",
     example: "ยูนิฟอร์ม ชุดคลุมหลายชั้น",
+    exampleEn: "Uniform, layered clothing",
     caf: 3,
     icon: ShieldCheck,
   },
   {
     id: "waterproof_chemical",
     label: "กันน้ำ/กันสารเคมี",
+    labelEn: "Waterproof / Chemical Protective",
     example: "เสื้อกันฝน ชุดไม่ระบายอากาศ",
+    exampleEn: "Raincoat, impermeable suit",
     caf: 6,
     icon: CloudRain,
   },
   {
     id: "full_ppe",
     label: "PPE เต็มชุด",
+    labelEn: "Full PPE",
     example: "อุปกรณ์ป้องกันเต็มรูปแบบ",
+    exampleEn: "Full protective gear",
     caf: 8,
     icon: Shield,
   },
@@ -100,23 +266,29 @@ const activityOptions = [
   {
     id: "light",
     label: "กิจกรรมเบา",
+    labelEn: "Light",
     modifier: 0,
     icon: Route,
     description: "เดินช้า งานตรวจพื้นที่ งานใช้แรงน้อย หรือกิจกรรมที่หยุดพักได้บ่อย",
+    descriptionEn: "Slow walking, inspection work, low-effort tasks, or activities with frequent breaks.",
   },
   {
     id: "moderate",
     label: "ปานกลาง",
+    labelEn: "Moderate",
     modifier: 1,
     icon: Activity,
     description: "เดินต่อเนื่อง ยกของเบา ทำสวน งานภาคสนามทั่วไป หรือออกกำลังกายระดับกลาง",
+    descriptionEn: "Continuous walking, light lifting, gardening, field work, or moderate exercise.",
   },
   {
     id: "heavy",
     label: "หนัก",
+    labelEn: "Heavy",
     modifier: 2.2,
     icon: ThermometerSun,
     description: "วิ่ง งานก่อสร้างหนัก ขุด ยกของหนัก หรือกิจกรรมที่ใช้แรงต่อเนื่อง",
+    descriptionEn: "Running, heavy construction work, digging, heavy lifting, or continuous strenuous activity.",
   },
 ];
 
@@ -124,48 +296,60 @@ const weatherMetrics = [
   {
     key: "temperature",
     label: "อุณหภูมิ",
+    labelEn: "Temperature",
     parameter: "Temperature_2m",
     description: "อุณหภูมิอากาศที่ระดับ 2 เมตร หน่วยองศาเซลเซียส",
+    descriptionEn: "Air temperature at 2 meters above ground in degrees Celsius.",
     icon: ThermometerSun,
     value: (weather) => `${weather.temp.toFixed(1)}°C`,
   },
   {
     key: "dewPoint",
     label: "จุดน้ำค้าง",
+    labelEn: "Dew Point",
     parameter: "DewPoint_2m",
     description: "อุณหภูมิที่ไอน้ำเริ่มกลั่นตัว ช่วยสะท้อนความชื้นในอากาศ",
+    descriptionEn: "The temperature where water vapor begins to condense, indicating air moisture.",
     icon: Droplets,
     value: (weather) => `${weather.dewPoint.toFixed(1)}°C`,
   },
   {
     key: "wetBulb",
     label: "อุณหภูมิกระเปาะเปียก",
+    labelEn: "Wet-bulb Temperature",
     parameter: "WetBulb_2m",
     description: "อุณหภูมิที่รวมผลของความร้อนและความชื้น ใช้กับการประเมินภาระความร้อน",
+    descriptionEn: "Temperature reflecting heat and humidity effects, used for heat stress assessment.",
     icon: Droplets,
     value: (weather) => `${weather.wetBulb.toFixed(1)}°C`,
   },
   {
     key: "diffuseRadiation",
     label: "รังสีกระจาย",
+    labelEn: "Diffuse Radiation",
     parameter: "DiffuseRadiation",
     description: "พลังงานรังสีอาทิตย์แบบกระจายจากท้องฟ้า หน่วยวัตต์ต่อตารางเมตร",
+    descriptionEn: "Diffuse solar radiation from the sky in watts per square meter.",
     icon: Sun,
     value: (weather) => `${Math.round(weather.diffuseRadiation)} W/m²`,
   },
   {
     key: "sunshineDuration",
     label: "ระยะเวลาแดดออก",
+    labelEn: "Sunshine Duration",
     parameter: "SunshineDuration",
     description: "จำนวนวินาทีที่มีแสงแดดในชั่วโมงนั้น",
+    descriptionEn: "Number of seconds with sunshine during the selected hour.",
     icon: Sun,
-    value: (weather) => `${Math.round(weather.sunshineDuration)} วิ`,
+    value: (weather, language) => `${Math.round(weather.sunshineDuration)} ${language === "en" ? "sec" : "วิ"}`,
   },
   {
     key: "cloudCoverHigh",
     label: "เมฆชั้นสูง",
+    labelEn: "High Cloud Cover",
     parameter: "CloudCoverHigh",
     description: "สัดส่วนเมฆชั้นสูง หน่วยเปอร์เซ็นต์ 0-100",
+    descriptionEn: "Percentage of high cloud cover from 0 to 100.",
     icon: CloudRain,
     value: (weather) => `${Math.round(weather.cloudCoverHigh)}%`,
   },
@@ -177,6 +361,14 @@ const recommendations = {
   high: ["ลดความหนักของงาน", "พักในร่มทุก 30 นาที", "ติดตามอาการเวียนศีรษะ คลื่นไส้ หรือเป็นตะคริว"],
   veryHigh: ["หลีกเลี่ยงงานกลางแจ้งหากไม่จำเป็น", "จัดเวรพักและมีผู้ดูแลร่วม", "หยุดกิจกรรมทันทีหากมีอาการลมแดด"],
   extreme: ["งดกิจกรรมกลางแจ้งที่ไม่เร่งด่วน", "ต้องมีแผนฉุกเฉินและพื้นที่ทำความเย็น", "แจ้งหัวหน้างานหรือเจ้าหน้าที่หากมีอาการผิดปกติ"],
+};
+
+const recommendationsEn = {
+  low: ["Drink water regularly.", "Watch for unusual symptoms during prolonged activity."],
+  moderate: ["Rest in shade every 45-60 minutes.", "Prepare drinking water and reduce activity during peak sun."],
+  high: ["Reduce work intensity.", "Rest in shade every 30 minutes.", "Watch for dizziness, nausea, or cramps."],
+  veryHigh: ["Avoid outdoor work unless necessary.", "Set up rest rotations and buddy monitoring.", "Stop activity immediately if heat illness symptoms appear."],
+  extreme: ["Cancel non-essential outdoor activity.", "Prepare an emergency plan and cooling area.", "Notify a supervisor or staff member if symptoms appear."],
 };
 
 const fallbackWeather = {
@@ -251,18 +443,18 @@ function wetBulbCelsius(tempC, humidity) {
 
 function classifyRisk(effectiveWbgt) {
   if (effectiveWbgt >= 38) {
-    return { key: "extreme", label: "เสี่ยงสูงมาก", color: "#e62e42", pct: 98 };
+    return { key: "extreme", label: "เสี่ยงสูงมาก", labelEn: "Extreme Risk", color: "#e62e42", pct: 98 };
   }
   if (effectiveWbgt >= 34) {
-    return { key: "veryHigh", label: "เสี่ยงสูง", color: "#f26b2f", pct: 78 };
+    return { key: "veryHigh", label: "เสี่ยงสูง", labelEn: "Very High Risk", color: "#f26b2f", pct: 78 };
   }
   if (effectiveWbgt >= 31) {
-    return { key: "high", label: "สูง", color: "#f5ad24", pct: 58 };
+    return { key: "high", label: "สูง", labelEn: "High", color: "#f5ad24", pct: 58 };
   }
   if (effectiveWbgt >= 28) {
-    return { key: "moderate", label: "ปานกลาง", color: "#9ccf3b", pct: 37 };
+    return { key: "moderate", label: "ปานกลาง", labelEn: "Moderate", color: "#9ccf3b", pct: 37 };
   }
-  return { key: "low", label: "ต่ำ", color: "#28b95f", pct: 16 };
+  return { key: "low", label: "ต่ำ", labelEn: "Low", color: "#28b95f", pct: 16 };
 }
 
 function findNearestHourlyIndex(times, datetimeLocal) {
@@ -303,7 +495,7 @@ function normalizeOpenMeteo(raw, datetimeLocal) {
   return {
     temp,
     humidity,
-    radiation: `${cloudCover}% เมฆ`,
+    radiation: `${cloudCover}% cloud`,
     wind,
     dewPoint,
     wetBulb,
@@ -360,7 +552,7 @@ async function fetchOpenMeteo(lat, lon, datetimeLocal) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error("ไม่สามารถเตรียมข้อมูลสภาพอากาศได้");
+    throw new Error("Unable to prepare weather data.");
   }
 
   return data;
@@ -436,8 +628,38 @@ function saveHistory(items) {
   window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(items));
 }
 
+function loadLanguage() {
+  if (typeof window === "undefined") {
+    return "th";
+  }
+
+  return window.localStorage.getItem(LANGUAGE_STORAGE_KEY) === "en" ? "en" : "th";
+}
+
+function saveLanguage(language) {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  }
+}
+
 function formatDateTimeThai(datetimeLocal) {
   return datetimeLocal ? datetimeLocal.replace("T", " ") : "-";
+}
+
+function optionLabel(option, language) {
+  return language === "en" ? option.labelEn : option.label;
+}
+
+function optionDescription(option, language) {
+  return language === "en" ? option.descriptionEn : option.description;
+}
+
+function optionExample(option, language) {
+  return language === "en" ? option.exampleEn : option.example;
+}
+
+function riskLabel(risk, language) {
+  return language === "en" ? risk.labelEn : risk.label;
 }
 
 function createHistoryRecord({ form, prediction, latitude, longitude, apiStatus, model }) {
@@ -447,13 +669,15 @@ function createHistoryRecord({ form, prediction, latitude, longitude, apiStatus,
     datetime: form.datetime,
     latitude,
     longitude,
-    locationSource: form.mode === "gps" ? "GPS ปัจจุบัน" : "เลือกบนแผนที่",
-    clothingLabel: prediction.clothing.label,
-    activityLabel: prediction.activity.label,
+    locationMode: form.mode,
+    clothingId: prediction.clothing.id,
+    activityId: prediction.activity.id,
     wbgt: Number(prediction.wbgt.toFixed(2)),
     effectiveWbgt: Number(prediction.effectiveWbgt.toFixed(2)),
     heatIndex: Number(prediction.heatIndex.toFixed(2)),
+    riskKey: prediction.risk.key,
     riskLabel: prediction.risk.label,
+    riskLabelEn: prediction.risk.labelEn,
     riskColor: prediction.risk.color,
     apiStatus,
     model: model ?? "-",
@@ -461,6 +685,7 @@ function createHistoryRecord({ form, prediction, latitude, longitude, apiStatus,
 }
 
 function App() {
+  const [language, setLanguage] = useState(() => loadLanguage());
   const [form, setForm] = useState({
     mode: "gps",
     latitude: DEFAULT_COORDINATES.latitude.toFixed(6),
@@ -486,9 +711,10 @@ function App() {
     data: null,
     error: "",
   });
-  const [apiStatus, setApiStatus] = useState("กรอกข้อมูล");
+  const [apiStatus, setApiStatus] = useState(() => translations[loadLanguage()].fillInfo);
   const [evaluationError, setEvaluationError] = useState("");
   const [backendWbgt, setBackendWbgt] = useState(null);
+  const t = translations[language];
 
   const manualLatitude = Number(form.latitude);
   const manualLongitude = Number(form.longitude);
@@ -506,7 +732,7 @@ function App() {
       return {
         lat: gpsState.coords.latitude,
         lon: gpsState.coords.longitude,
-        label: "ตำแหน่ง GPS ปัจจุบัน",
+        label: t.gpsCoordinates,
       };
     }
 
@@ -514,12 +740,12 @@ function App() {
       return {
         lat: manualLatitude,
         lon: manualLongitude,
-        label: "พิกัดที่ป้อนเอง",
+        label: t.selectedCoordinates,
       };
     }
 
     return null;
-  }, [form.mode, gpsState.coords, hasValidManualCoordinates, manualLatitude, manualLongitude]);
+  }, [form.mode, gpsState.coords, hasValidManualCoordinates, manualLatitude, manualLongitude, t.gpsCoordinates, t.selectedCoordinates]);
   const mapCenter = useMemo(
     () => [
       hasValidManualCoordinates ? manualLatitude : DEFAULT_COORDINATES.latitude,
@@ -542,6 +768,22 @@ function App() {
   }
 
   function closeInfo() {
+    setOpenInfo(null);
+  }
+
+  function changeLanguage(nextLanguage) {
+    const nextText = translations[nextLanguage];
+    setLanguage(nextLanguage);
+    saveLanguage(nextLanguage);
+    if (loading) {
+      setApiStatus(nextText.evaluating);
+    } else if (evaluationError) {
+      setApiStatus(nextText.evaluationFailed);
+    } else if (hasEvaluated) {
+      setApiStatus(nextText.evaluated);
+    } else {
+      setApiStatus(nextText.fillInfo);
+    }
     setOpenInfo(null);
   }
 
@@ -592,7 +834,7 @@ function App() {
     setHasEvaluated(false);
     setBackendWbgt(null);
     setEvaluationError("");
-    setApiStatus("กรอกข้อมูล");
+    setApiStatus(t.fillInfo);
   }
 
   function updateForm(key, value) {
@@ -608,7 +850,7 @@ function App() {
         status: "error",
         coords: null,
         accuracy: null,
-        error: "เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง GPS",
+        error: language === "en" ? "This browser does not support GPS location." : "เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง GPS",
       });
       setForm((current) => ({ ...current, mode: "gps" }));
       return;
@@ -638,8 +880,12 @@ function App() {
       (error) => {
         const message =
           error.code === error.PERMISSION_DENIED
-            ? "ไม่ได้รับสิทธิ์เข้าถึงตำแหน่ง กรุณาอนุญาต GPS ในเบราว์เซอร์"
-            : "ไม่สามารถอ่านตำแหน่งปัจจุบันได้ กรุณาลองอีกครั้ง";
+            ? language === "en"
+              ? "Location access was denied. Please allow GPS in your browser."
+              : "ไม่ได้รับสิทธิ์เข้าถึงตำแหน่ง กรุณาอนุญาต GPS ในเบราว์เซอร์"
+            : language === "en"
+              ? "Unable to read current location. Please try again."
+              : "ไม่สามารถอ่านตำแหน่งปัจจุบันได้ กรุณาลองอีกครั้ง";
 
         setGpsState({
           status: "error",
@@ -671,7 +917,7 @@ function App() {
     event.preventDefault();
     setLoading(true);
     setEvaluationError("");
-    setApiStatus("กำลังประเมิน");
+    setApiStatus(t.evaluating);
 
     const weather = result.weather;
     const hour = getHourOfDay(form.datetime);
@@ -713,7 +959,7 @@ function App() {
     };
 
     let predictedWbgt = null;
-    let evaluatedStatus = "ประเมินเสร็จแล้ว";
+    let evaluatedStatus = t.evaluated;
     let modelName = null;
 
     try {
@@ -730,13 +976,13 @@ function App() {
       const data = await response.json();
       predictedWbgt = data?.data?.wbgt_c ?? data?.wbgt_c ?? null;
       modelName = data?.data?.model ?? data?.model ?? null;
-      evaluatedStatus = "ประเมินเสร็จแล้ว";
+      evaluatedStatus = t.evaluated;
       setBackendWbgt(predictedWbgt);
       setApiStatus(evaluatedStatus);
     } catch {
       setBackendWbgt(null);
-      setApiStatus("ประเมินไม่สำเร็จ");
-      setEvaluationError("ไม่สามารถประเมินผลได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      setApiStatus(t.evaluationFailed);
+      setEvaluationError(t.evaluationError);
       setHasEvaluated(false);
       setLoading(false);
       return;
@@ -779,23 +1025,41 @@ function App() {
         </div>
         <div>
           <p className="eyebrow">Outdoor Heat Risk</p>
-          <h1>ประเมินความเสี่ยงจากความร้อนกลางแจ้ง</h1>
+          <h1>{t.appTitle}</h1>
         </div>
-        <button
-          className="icon-button"
-          type="button"
-          aria-expanded={openInfo === "about"}
-          aria-label="เกี่ยวกับแอป"
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleInfo("about");
-          }}
-        >
-          <Info size={22} />
-        </button>
+        <div className="top-actions">
+          <div className="language-toggle" aria-label="Language">
+            {["th", "en"].map((item) => (
+              <button
+                key={item}
+                className={language === item ? "active" : ""}
+                type="button"
+                aria-pressed={language === item}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeLanguage(item);
+                }}
+              >
+                {item.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          <button
+            className="icon-button"
+            type="button"
+            aria-expanded={openInfo === "about"}
+            aria-label={t.aboutLabel}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleInfo("about");
+            }}
+          >
+            <Info size={20} />
+          </button>
+        </div>
         {openInfo === "about" && (
           <div className="about-popover" role="status" onPointerDown={(event) => event.stopPropagation()}>
-            ระบบช่วยประเมินความเสี่ยงจากความร้อนกลางแจ้ง โดยใช้ข้อมูลสภาพอากาศตามตำแหน่งและเวลาที่เลือก
+            {t.aboutText}
           </div>
         )}
       </header>
@@ -806,15 +1070,15 @@ function App() {
         <section className="panel input-panel" aria-label="ฟอร์มประเมิน">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">ตั้งค่าการประเมิน</p>
-              <h2>เลือกพื้นที่และกิจกรรม</h2>
+              <p className="eyebrow">{t.setupEyebrow}</p>
+              <h2>{t.setupTitle}</h2>
             </div>
             <span className="status-pill">{apiStatus}</span>
           </div>
 
           <form onSubmit={evaluateRisk} className="risk-form">
             <fieldset>
-              <legend><MapPin size={18} /> เลือกพื้นที่</legend>
+              <legend><MapPin size={18} /> {t.location}</legend>
               <div className="mode-grid">
                 <button
                   type="button"
@@ -822,7 +1086,7 @@ function App() {
                   onClick={requestGpsLocation}
                 >
                   <LocateFixed size={21} />
-                  <span>ใช้ตำแหน่งปัจจุบัน</span>
+                  <span>{t.useCurrentLocation}</span>
                 </button>
                 <button
                   type="button"
@@ -833,30 +1097,30 @@ function App() {
                   }}
                 >
                   <Map size={21} />
-                  <span>เลือกบนแผนที่</span>
+                  <span>{t.chooseOnMap}</span>
                 </button>
               </div>
 
               {form.mode === "gps" && (
                 <div className="location-preview">
                   <div>
-                    <p className="eyebrow">ตำแหน่งปัจจุบัน</p>
+                    <p className="eyebrow">{t.currentLocation}</p>
                     <strong>
                       {gpsState.status === "success"
-                        ? "ใช้พิกัด GPS ปัจจุบัน"
-                        : "กดเพื่อขออนุญาตใช้ GPS จากเบราว์เซอร์"}
+                        ? t.gpsReady
+                        : t.gpsPrompt}
                     </strong>
                     {gpsState.status === "success" && (
                       <>
-                        <p>พิกัดปัจจุบัน {gpsState.coords.latitude.toFixed(6)}, {gpsState.coords.longitude.toFixed(6)}</p>
-                        <p>ความแม่นยำ GPS ประมาณ {Math.round(gpsState.accuracy)} ม.</p>
+                        <p>{t.currentCoordinates} {gpsState.coords.latitude.toFixed(6)}, {gpsState.coords.longitude.toFixed(6)}</p>
+                        <p>{t.gpsAccuracy} {Math.round(gpsState.accuracy)} m</p>
                       </>
                     )}
                     {gpsState.status === "idle" && (
-                      <p>ระบบจะใช้ตำแหน่งจากอุปกรณ์เพื่อแสดงข้อมูลอากาศและประเมินความเสี่ยง</p>
+                      <p>{t.gpsIdle}</p>
                     )}
                     {gpsState.status === "loading" && (
-                      <p>กำลังขอตำแหน่งจากอุปกรณ์...</p>
+                      <p>{t.gpsLoading}</p>
                     )}
                     {gpsState.status === "error" && (
                       <p className="gps-error">{gpsState.error}</p>
@@ -869,7 +1133,7 @@ function App() {
                     disabled={gpsState.status === "loading"}
                   >
                     {gpsState.status === "loading" ? <RefreshCw className="spin" size={16} /> : <LocateFixed size={16} />}
-                    {gpsState.status === "success" ? "อัปเดต GPS" : "ใช้ GPS ตอนนี้"}
+                    {gpsState.status === "success" ? t.updateGps : t.useGpsNow}
                   </button>
                 </div>
               )}
@@ -899,15 +1163,15 @@ function App() {
                       <strong>{hasValidManualCoordinates ? manualLongitude.toFixed(6) : "-"}</strong>
                     </div>
                   </div>
-                  <p className="map-hint">แตะบนแผนที่เพื่อเลือกตำแหน่ง ระบบจะอัปเดตข้อมูลอากาศตามพิกัดนี้ทันที</p>
+                  <p className="map-hint">{t.mapHint}</p>
                 </div>
               )}
             </fieldset>
 
             <fieldset>
-              <legend><CalendarClock size={18} /> วันและเวลา</legend>
+              <legend><CalendarClock size={18} /> {t.dateTime}</legend>
               <label>
-                เวลา Asia/Bangkok
+                {t.bangkokTime}
                 <input
                   type="datetime-local"
                   value={form.datetime}
@@ -920,32 +1184,32 @@ function App() {
               <div className="weather-context" aria-label="ข้อมูลสภาพอากาศของพื้นที่และเวลาที่เลือก">
                 <div className="weather-context-heading">
                   <div>
-                    <p className="eyebrow">ข้อมูลสภาพอากาศ</p>
-                    <h3>{weatherCoordinates?.label ?? "รอพิกัด"}</h3>
+                    <p className="eyebrow">{t.weather}</p>
+                    <h3>{weatherCoordinates?.label ?? t.waitingCoordinates}</h3>
                     {weatherState.status === "success" && (
                       <p>
-                        ข้อมูลอากาศตามตำแหน่งที่เลือก
-                        {result.weather.hourlyTime ? ` · เวลา ${result.weather.hourlyTime.replace("T", " ")}` : ""}
+                        {t.weatherForLocation}
+                        {result.weather.hourlyTime ? ` · ${t.atTime} ${result.weather.hourlyTime.replace("T", " ")}` : ""}
                       </p>
                     )}
                   </div>
                   <span className="status-pill">
-                    {weatherState.status === "loading" && "กำลังเตรียมข้อมูล"}
-                    {weatherState.status === "success" && "ข้อมูลพร้อม"}
-                    {weatherState.status === "error" && "ไม่พบข้อมูล"}
-                    {weatherState.status === "idle" && "รอพื้นที่"}
+                    {weatherState.status === "loading" && t.preparingData}
+                    {weatherState.status === "success" && t.dataReady}
+                    {weatherState.status === "error" && t.noData}
+                    {weatherState.status === "idle" && t.waitingArea}
                   </span>
                 </div>
                 {weatherState.status === "loading" && (
                   <div className="weather-message">
                     <RefreshCw className="spin" size={18} />
-                    กำลังเตรียมข้อมูลสภาพอากาศ...
+                    {t.preparingWeather}
                   </div>
                 )}
                 {weatherState.status === "error" && (
                   <div className="weather-message error">
                     <AlertTriangle size={18} />
-                    {weatherState.error}
+                    {t.weatherError}
                   </div>
                 )}
 	                {weatherState.status === "success" && (
@@ -954,10 +1218,10 @@ function App() {
 	                      <Metric
 	                        key={metric.key}
 	                        icon={metric.icon}
-	                        label={metric.label}
-	                        value={metric.value(result.weather)}
+	                        label={language === "en" ? metric.labelEn : metric.label}
+	                        value={metric.value(result.weather, language)}
 	                        parameter={metric.parameter}
-	                        description={metric.description}
+	                        description={language === "en" ? metric.descriptionEn : metric.description}
 	                        open={openInfo === `weather:${metric.key}`}
 	                        onToggle={(event) => {
 	                          event.stopPropagation();
@@ -972,12 +1236,12 @@ function App() {
 
             <fieldset className="caf-fieldset">
               <legend>
-                <Shirt size={18} /> ประเภทเสื้อผ้า
+                <Shirt size={18} /> {t.clothingType}
 	                <button
 	                  className="mini-info-button"
 	                  type="button"
 	                  aria-expanded={openInfo === "caf"}
-	                  aria-label="ข้อมูล CAF"
+	                  aria-label={t.cafInfoLabel}
 	                  onClick={(event) => {
 	                    event.stopPropagation();
 	                    toggleInfo("caf");
@@ -989,7 +1253,7 @@ function App() {
 
 	              {openInfo === "caf" && (
 	                <div className="info-popover" role="status">
-	                  CAF ใช้ปรับค่า WBGT ตามผลของเสื้อผ้าต่อการระบายความร้อนของร่างกาย
+	                  {t.cafInfo}
                 </div>
               )}
 
@@ -1013,8 +1277,8 @@ function App() {
                     >
                       <span className="clothing-icon"><Icon size={21} /></span>
                       <span className="clothing-copy">
-                        <strong>{option.label}</strong>
-                        <small>{option.example}</small>
+                        <strong>{optionLabel(option, language)}</strong>
+                        <small>{optionExample(option, language)}</small>
                       </span>
                       <span className="caf-badge">{option.caf > 0 ? `+${option.caf}` : option.caf}°C</span>
                       {selected && <span className="check-badge"><Check size={15} /></span>}
@@ -1025,7 +1289,7 @@ function App() {
             </fieldset>
 
             <fieldset>
-              <legend><Activity size={18} /> ระดับกิจกรรม</legend>
+              <legend><Activity size={18} /> {t.activityLevel}</legend>
               <div className="activity-grid">
 	                {activityOptions.map((option) => {
 	                  const Icon = option.icon;
@@ -1038,13 +1302,13 @@ function App() {
                         onClick={() => updateForm("activity", option.id)}
                       >
                         <Icon size={20} />
-                        <span>{option.label}</span>
+                        <span>{optionLabel(option, language)}</span>
                       </button>
                       <button
 	                        type="button"
 	                        className="activity-info-button"
 	                        aria-expanded={open}
-	                        aria-label={`ข้อมูล${option.label}`}
+	                        aria-label={`${t.aboutLabel} ${optionLabel(option, language)}`}
 	                        onClick={(event) => {
 	                          event.stopPropagation();
 	                          toggleInfo(`activity:${option.id}`);
@@ -1054,7 +1318,7 @@ function App() {
                       </button>
                       {open && (
                         <div className="activity-tooltip" role="status">
-                          {option.description}
+                          {optionDescription(option, language)}
                         </div>
                       )}
                     </div>
@@ -1065,7 +1329,7 @@ function App() {
 
             <button className="primary-button" type="submit" disabled={!canEvaluate}>
               {loading ? <RefreshCw className="spin" size={19} /> : <ShieldCheck size={19} />}
-              {weatherState.status === "success" ? "ดูผลการประเมิน" : "รอข้อมูลสภาพอากาศ"}
+              {weatherState.status === "success" ? t.evaluateButton : t.waitWeather}
             </button>
           </form>
         </section>
@@ -1074,16 +1338,16 @@ function App() {
           {!hasEvaluated ? (
             <div className="empty-results">
               {evaluationError ? <AlertTriangle size={34} /> : <ShieldCheck size={34} />}
-              <h2>{evaluationError ? "ประเมินไม่สำเร็จ" : "ยังไม่มีผลการประเมิน"}</h2>
-              <p>{evaluationError || "เลือกพื้นที่ วันเวลา ประเภทเสื้อผ้า และระดับกิจกรรม จากนั้นกด “ดูผลการประเมิน” เพื่อให้ระบบประมวลผล"}</p>
+              <h2>{evaluationError ? t.evaluationFailed : t.noResult}</h2>
+              <p>{evaluationError || t.noResultHelp}</p>
             </div>
           ) : (
             <>
           <nav className="tabs" aria-label="แท็บผลลัพธ์">
             {[
-              ["summary", "สรุป"],
-              ["chart", "กราฟ"],
-              ["advice", "คำแนะนำ"],
+              ["summary", t.summary],
+              ["chart", t.chart],
+              ["advice", t.advice],
             ].map(([id, label]) => (
               <button
                 key={id}
@@ -1100,22 +1364,22 @@ function App() {
             <div className="summary-stack">
               <div className="risk-card">
                 <div>
-                  <p>ระดับความเสี่ยงโดยรวม</p>
-                  <strong style={{ color: result.risk.color }}>{result.risk.label}</strong>
+                  <p>{t.overallRisk}</p>
+                  <strong style={{ color: result.risk.color }}>{riskLabel(result.risk, language)}</strong>
                 </div>
                 <AlertTriangle size={30} color={result.risk.color} />
                 <div className="risk-rail" aria-hidden="true">
                   <span style={{ left: `${result.risk.pct}%`, backgroundColor: result.risk.color }} />
                 </div>
                 <div className="risk-labels">
-                  <span>ต่ำ</span><span>ปานกลาง</span><span>สูง</span><span>สูงมาก</span>
+                  <span>{t.low}</span><span>{t.moderate}</span><span>{t.high}</span><span>{t.veryHigh}</span>
                 </div>
               </div>
 
               <div className="index-grid">
-                <IndexCard label="WBGT" sublabel="โมเดล" value={result.wbgt} tone="blue" />
-                <IndexCard label="Effective WBGT" sublabel="WBGT + CAF เสื้อผ้า" value={result.effectiveWbgt} tone="orange" />
-                <IndexCard label="Heat Index" sublabel="อุณหภูมิที่รู้สึก" value={result.heatIndex} tone="red" />
+                <IndexCard label="WBGT" sublabel={t.model} value={result.wbgt} tone="blue" />
+                <IndexCard label="Effective WBGT" sublabel={t.clothingCaf} value={result.effectiveWbgt} tone="orange" />
+                <IndexCard label="Heat Index" sublabel={t.feelsLike} value={result.heatIndex} tone="red" />
               </div>
             </div>
           )}
@@ -1124,7 +1388,7 @@ function App() {
             <div className="chart-stack">
               <div className="chart-panel">
                 <div className="chart-heading">
-                  <h3>เปรียบเทียบค่าดัชนี</h3>
+                  <h3>{t.compareIndexes}</h3>
                   <BarChart3 size={20} />
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
@@ -1132,7 +1396,7 @@ function App() {
                     <CartesianGrid vertical={false} stroke="#e5edf7" />
                     <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                     <YAxis unit="°C" tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value) => [`${value} °C`, "ค่า"]} />
+                    <Tooltip formatter={(value) => [`${value} °C`, t.value]} />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -1140,8 +1404,8 @@ function App() {
 
               <div className="chart-panel">
                 <div className="chart-heading">
-                  <h3>แนวโน้มวันนี้</h3>
-                  <span className="status-pill">วันนี้</span>
+                  <h3>{t.todayTrend}</h3>
+                  <span className="status-pill">{t.today}</span>
                 </div>
                 <ResponsiveContainer width="100%" height={240}>
                   <LineChart data={trendData}>
@@ -1164,17 +1428,17 @@ function App() {
               <div className="advice-head">
                 <ShieldCheck size={24} />
                 <div>
-                  <h3>คำแนะนำเพื่อความปลอดภัย</h3>
-                  <p>อ้างอิงระดับความเสี่ยง {result.risk.label}</p>
+                  <h3>{t.safetyAdvice}</h3>
+                  <p>{t.basedOnRisk} {riskLabel(result.risk, language)}</p>
                 </div>
               </div>
               <ul>
-                {recommendations[result.risk.key].map((item) => (
+                {(language === "en" ? recommendationsEn : recommendations)[result.risk.key].map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
               <a className="detail-link" href="#details">
-                ดูรายละเอียดเพิ่มเติม <ChevronRight size={17} />
+                {t.details} <ChevronRight size={17} />
               </a>
             </div>
           )}
@@ -1186,20 +1450,20 @@ function App() {
           <section className="panel history-panel" aria-label="ประวัติการประเมิน">
             <div className="history-heading">
               <div>
-                <p className="eyebrow">ประวัติในเครื่องนี้</p>
-                <h2>ประวัติการประเมิน</h2>
+                <p className="eyebrow">{t.historyLocal}</p>
+                <h2>{t.historyTitle}</h2>
               </div>
               <button className="ghost-button" type="button" onClick={clearHistory} disabled={historyItems.length === 0}>
                 <Trash2 size={16} />
-                ล้าง
+                {t.clear}
               </button>
             </div>
 
             {historyItems.length === 0 ? (
               <div className="empty-history">
                 <History size={34} />
-                <h3>ยังไม่มีประวัติ</h3>
-                <p>เมื่อกดดูผลการประเมิน ระบบจะบันทึกผลล่าสุดไว้ในอุปกรณ์นี้ด้วย localStorage</p>
+                <h3>{t.noHistory}</h3>
+                <p>{t.noHistoryHelp}</p>
               </div>
             ) : (
               <div className="history-list">
@@ -1207,10 +1471,10 @@ function App() {
                   <article className="history-card" key={item.id}>
                     <div className="history-card-head">
                       <div>
-                        <strong>{item.locationSource}</strong>
+                        <strong>{item.locationMode === "gps" ? t.gpsSource : t.mapSource}</strong>
                         <p>{formatDateTimeThai(item.datetime)}</p>
                       </div>
-                      <span style={{ color: item.riskColor }}>{item.riskLabel}</span>
+                      <span style={{ color: item.riskColor }}>{language === "en" ? item.riskLabelEn ?? item.riskLabel : item.riskLabel}</span>
                     </div>
                     <div className="history-coordinates">
                       {item.latitude.toFixed(5)}, {item.longitude.toFixed(5)}
@@ -1221,8 +1485,8 @@ function App() {
                       <div><span>Heat Index</span><strong>{item.heatIndex.toFixed(1)}°C</strong></div>
                     </div>
                     <div className="history-meta">
-                      <span>{item.clothingLabel}</span>
-                      <span>{item.activityLabel}</span>
+                      <span>{optionLabel(clothingOptions.find((option) => option.id === item.clothingId) ?? { label: item.clothingLabel, labelEn: item.clothingLabel }, language)}</span>
+                      <span>{optionLabel(activityOptions.find((option) => option.id === item.activityId) ?? { label: item.activityLabel, labelEn: item.activityLabel }, language)}</span>
                     </div>
                   </article>
                 ))}
@@ -1233,18 +1497,18 @@ function App() {
       </main>
 
       <footer className="footer">
-        <span>เครือข่ายวิจัยระบบประเมินความเสี่ยงจากความร้อน</span>
-        <span>ติดต่อทีมวิจัย: heat-risk@example.org</span>
+        <span>{t.footerOrg}</span>
+        <span>{t.footerContact}</span>
       </footer>
 
       <nav className="bottom-nav" aria-label="เมนูหลัก">
         <button type="button" className={view === "assess" ? "active" : ""} onClick={() => setView("assess")}>
           <ShieldCheck size={20} />
-          ประเมิน
+          {t.assess}
         </button>
         <button type="button" className={view === "history" ? "active" : ""} onClick={() => setView("history")}>
           <History size={20} />
-          ประวัติ
+          {t.history}
         </button>
       </nav>
     </div>
