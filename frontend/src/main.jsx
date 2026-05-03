@@ -47,6 +47,7 @@ const DEFAULT_COORDINATES = {
   longitude: 101.335076,
 };
 
+const WBGT_API_BASE_URL = (import.meta.env.VITE_WBGT_API_BASE_URL ?? "https://wbgt-app-49xb.onrender.com").replace(/\/$/, "");
 const HISTORY_STORAGE_KEY = "wbgt-risk-history";
 const MAX_HISTORY_ITEMS = 20;
 
@@ -365,6 +366,10 @@ async function fetchOpenMeteo(lat, lon, datetimeLocal) {
   return data;
 }
 
+function apiUrl(path) {
+  return `${WBGT_API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 function MapClickHandler({ onPick }) {
   useMapEvents({
     click(event) {
@@ -482,6 +487,7 @@ function App() {
     error: "",
   });
   const [apiStatus, setApiStatus] = useState("กรอกข้อมูล");
+  const [evaluationError, setEvaluationError] = useState("");
   const [backendWbgt, setBackendWbgt] = useState(null);
 
   const manualLatitude = Number(form.latitude);
@@ -585,6 +591,7 @@ function App() {
   function resetEvaluation() {
     setHasEvaluated(false);
     setBackendWbgt(null);
+    setEvaluationError("");
     setApiStatus("กรอกข้อมูล");
   }
 
@@ -663,6 +670,7 @@ function App() {
   async function evaluateRisk(event) {
     event.preventDefault();
     setLoading(true);
+    setEvaluationError("");
     setApiStatus("กำลังประเมิน");
 
     const weather = result.weather;
@@ -709,7 +717,7 @@ function App() {
     let modelName = null;
 
     try {
-      const response = await fetch("/api/predict-wbgt", {
+      const response = await fetch(apiUrl("/predict-wbgt"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -727,25 +735,33 @@ function App() {
       setApiStatus(evaluatedStatus);
     } catch {
       setBackendWbgt(null);
-      setApiStatus(evaluatedStatus);
-    } finally {
-      const prediction = buildPrediction(form, predictedWbgt, weather);
-      const historyRecord = createHistoryRecord({
-        form,
-        prediction,
-        latitude,
-        longitude,
-        apiStatus: evaluatedStatus,
-        model: modelName,
-      });
+      setApiStatus("ประเมินไม่สำเร็จ");
+      setEvaluationError("ไม่สามารถประเมินผลได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      setHasEvaluated(false);
+      setLoading(false);
+      return;
+    }
 
-      setHistoryItems((current) => {
-        const next = [historyRecord, ...current].slice(0, MAX_HISTORY_ITEMS);
-        saveHistory(next);
-        return next;
-      });
+    const prediction = buildPrediction(form, predictedWbgt, weather);
+    const historyRecord = createHistoryRecord({
+      form,
+      prediction,
+      latitude,
+      longitude,
+      apiStatus: evaluatedStatus,
+      model: modelName,
+    });
+
+    setHistoryItems((current) => {
+      const next = [historyRecord, ...current].slice(0, MAX_HISTORY_ITEMS);
+      saveHistory(next);
+      return next;
+    });
+
+    try {
       setActiveTab("summary");
       setHasEvaluated(true);
+    } finally {
       setLoading(false);
     }
   }
@@ -1057,9 +1073,9 @@ function App() {
         <section className={hasEvaluated ? "results-area" : "results-area pending"} aria-label="ผลการประเมิน">
           {!hasEvaluated ? (
             <div className="empty-results">
-              <ShieldCheck size={34} />
-              <h2>ยังไม่มีผลการประเมิน</h2>
-              <p>เลือกพื้นที่ วันเวลา ประเภทเสื้อผ้า และระดับกิจกรรม จากนั้นกด “ดูผลการประเมิน” เพื่อให้ระบบประมวลผล</p>
+              {evaluationError ? <AlertTriangle size={34} /> : <ShieldCheck size={34} />}
+              <h2>{evaluationError ? "ประเมินไม่สำเร็จ" : "ยังไม่มีผลการประเมิน"}</h2>
+              <p>{evaluationError || "เลือกพื้นที่ วันเวลา ประเภทเสื้อผ้า และระดับกิจกรรม จากนั้นกด “ดูผลการประเมิน” เพื่อให้ระบบประมวลผล"}</p>
             </div>
           ) : (
             <>
