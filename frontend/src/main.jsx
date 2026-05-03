@@ -609,28 +609,72 @@ async function predictWbgt(features) {
   };
 }
 
+async function predictWbgtBatch(items) {
+  const response = await fetch(apiUrl("/predict-wbgt-batch"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: items.map((item) => ({
+        features: item.features,
+        metadata: item.metadata,
+      })),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Batch prediction unavailable");
+  }
+
+  const data = await response.json();
+  const predictions = data?.data?.predictions ?? data?.predictions;
+
+  if (!Array.isArray(predictions) || predictions.length !== items.length) {
+    throw new Error("Invalid batch prediction");
+  }
+
+  return predictions;
+}
+
 async function buildRealTrendData({ rawWeather, date, latitude, longitude, caf }) {
   const hourly = rawWeather?.hourly ?? {};
   const hours = Array.from({ length: 13 }, (_, index) => index + 6);
+  const items = hours.map((hour) => {
+    const datetime = `${date}T${String(hour).padStart(2, "0")}:00`;
+    const hourlyIndex = findNearestHourlyIndex(hourly.time, datetime);
+    const weather = weatherFromHourly(rawWeather, hourlyIndex);
+    const features = buildModelFeatures(weather, hour, latitude, longitude);
 
-  return Promise.all(
-    hours.map(async (hour) => {
-      const datetime = `${date}T${String(hour).padStart(2, "0")}:00`;
-      const hourlyIndex = findNearestHourlyIndex(hourly.time, datetime);
-      const weather = weatherFromHourly(rawWeather, hourlyIndex);
-      const features = buildModelFeatures(weather, hour, latitude, longitude);
-      const prediction = await predictWbgt(features);
-      const wbgt = prediction.wbgt;
-      const effectiveWbgt = wbgt + caf;
+    return {
+      hour,
+      datetime,
+      weather,
+      features,
+      metadata: {
+        datetime,
+        hour_of_day: hour,
+      },
+    };
+  });
 
-      return {
-        time: `${String(hour).padStart(2, "0")}:00`,
-        WBGT: Number(wbgt.toFixed(1)),
-        "Effective WBGT": Number(effectiveWbgt.toFixed(1)),
-        "Heat Index": Number(heatIndexCelsius(weather.temp, weather.humidity).toFixed(1)),
-      };
-    }),
-  );
+  const predictions = await predictWbgtBatch(items);
+
+  return items.map((item, index) => {
+    const prediction = predictions[index];
+    const wbgt = Number(prediction?.wbgt_c);
+
+    if (!Number.isFinite(wbgt)) {
+      throw new Error("Invalid batch item prediction");
+    }
+
+    const effectiveWbgt = wbgt + caf;
+
+    return {
+      time: `${String(item.hour).padStart(2, "0")}:00`,
+      WBGT: Number(wbgt.toFixed(1)),
+      "Effective WBGT": Number(effectiveWbgt.toFixed(1)),
+      "Heat Index": Number(heatIndexCelsius(item.weather.temp, item.weather.humidity).toFixed(1)),
+    };
+  });
 }
 
 function MapClickHandler({ onPick }) {
