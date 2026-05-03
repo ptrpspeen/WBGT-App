@@ -1,0 +1,127 @@
+WBGT Geo Model for Application Development
+==========================================
+
+Purpose
+-------
+This file summarizes the recommended model for the WBGT application prototype. To avoid confusion, the recommended model to send to the app developer is the Geo Model only.
+
+Recommended final model
+-----------------------
+Model type: XGBoost Geo Model
+Use case: Location-based WBGT prediction app
+Input design: Weather variables + hour_of_day + latitude + longitude
+Area code: Not required for this model
+
+Why this model is recommended
+-----------------------------
+Three retrained model designs were compared:
+
+1) Area model
+   Inputs: weather variables + hour_of_day + Area
+   XGBoost performance:
+   - MAE  = 0.6769 °C
+   - RMSE = 0.8974 °C
+   - R²   = 0.8487
+   Interpretation: Most accurate, but depends on site-specific Area codes and is best suited to the 47 known training sites.
+
+2) Geo model
+   Inputs: weather variables + hour_of_day + latitude + longitude
+   XGBoost performance:
+   - MAE  = 0.7065 °C
+   - RMSE = 0.9499 °C
+   - R²   = 0.8299
+   Interpretation: Very close to the Area model, but more suitable for a location-based app because it uses latitude/longitude instead of Area codes.
+
+3) Weather-only model
+   Inputs: weather variables + hour_of_day only
+   XGBoost performance:
+   - MAE  = 0.9557 °C
+   - RMSE = 1.3371 °C
+   - R²   = 0.6673
+   Interpretation: Performance is clearly lower, showing that location information improves WBGT prediction.
+
+Final recommendation
+--------------------
+Use the XGBoost Geo Model as the main model for the application prototype.
+
+Reason:
+- It does not require users or the app system to know Area codes.
+- It works naturally with a location-based workflow.
+- Its accuracy is close to the Area model.
+- The MAE difference between Geo and Area model is only about 0.03 °C, which is very small in practical use.
+
+
+Expected model inputs
+---------------------
+The Geo Model expects numeric inputs similar to the following:
+
+- Temperature_2m
+  Unit: °C
+  Source: Open-Meteo or equivalent weather API
+
+- DewPoint_2m
+  Unit: °C
+  Source: Open-Meteo or equivalent weather API
+
+- WetBulb_2m
+  Unit: °C
+  Source: Open-Meteo if available; otherwise derived from temperature and relative humidity
+
+- DiffuseRadiation
+  Unit: W/m²
+  Source: Open-Meteo radiation variable
+
+- SunshineDuration
+  Unit: same unit used in the cleaned training data; preferably seconds per hour if app preprocessing follows the cleaned dataset convention
+  Source: Open-Meteo if available; otherwise derived/approximated and should be validated
+
+- CloudCoverHigh
+  Unit: same unit used in the cleaned training data; check final_feature_schema_for_app.csv for the final convention
+  Source: Open-Meteo high cloud cover variable
+
+- hour_of_day
+  Unit/format: integer hour, e.g. 8, 9, 10, ..., 17
+  Source: computed by the app from the selected prediction time
+
+- latitude
+  Unit/format: decimal degrees
+  Source: user location, map selection, or geocoding
+
+- longitude
+  Unit/format: decimal degrees
+  Source: user location, map selection, or geocoding
+
+Important: The feature schema file should be treated as the source of truth. If the schema includes additional variables such as elevation, the app must also provide them.
+
+
+Basic R prediction example
+--------------------------
+If the app backend uses R, the model bundle can be loaded like this:
+
+bundle <- readRDS("final_xgb_geo_model_bundle_for_app.rds")
+model  <- bundle$model
+req    <- bundle$feature_cols_raw
+
+# newdata must contain all required columns with correct names and units
+# Example:
+# pred <- predict(model, newdata[, req, drop = FALSE])
+
+If the app is built using Node.js, Python, or another backend, the recommended approach is to expose the R model through an R Plumber API, or to keep the prediction service in R and let the app call it through an API endpoint.
+
+Key technical notes
+-------------------
+1) Do not use the old Time variable from the previous model.
+   The old Time variable was a cumulative index from the training dataset and is not suitable for a location-based app. The retrained model uses hour_of_day instead.
+
+2) Do not use Area code for the Geo Model.
+   Area is not required in the Geo Model. The model uses latitude and longitude instead.
+
+3) The model is intended as a screening and decision-support tool.
+   It should support heat-stress prevention planning, but should not be presented as formal ISO-compliant WBGT certification without further validation.
+
+4) Further validation is recommended.
+   The current comparison is based on random 5-fold cross-validation. For stronger evidence of performance at new sites, group-based validation such as leave-one-area-out or leave-one-province-out is recommended.
+
+5) Keep units consistent.
+   The app must send input variables using the same unit conventions used in the cleaned training data and final_feature_schema_for_app.csv.
+

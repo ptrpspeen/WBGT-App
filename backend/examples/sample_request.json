@@ -1,0 +1,13 @@
+{
+  "features": {
+    "Temperature_2m": 33.5,
+    "DewPoint_2m": 25.2,
+    "WetBulb_2m": 28.0,
+    "DiffuseRadiation": 180,
+    "SunshineDuration": 3300,
+    "CloudCoverHigh": 20,
+    "hour_of_day": 13,
+    "latitude": 14.7225,
+    "longitude": 101.3351
+  }
+}

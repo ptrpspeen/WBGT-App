@@ -1,0 +1,9 @@
+services:
+  wbgt-r-api:
+    build:
+      context: ./backend
+    container_name: wbgt-r-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app_prototype:/app/app_prototype:ro

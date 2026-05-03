@@ -1,0 +1,10 @@
+feature,role,unit_or_format,source_for_app
+Temperature_2m,weather,°C,Open-Meteo or derived
+DewPoint_2m,weather,°C,Open-Meteo or derived
+WetBulb_2m,weather,°C,Open-Meteo or derived
+DiffuseRadiation,weather,W/m²,Open-Meteo or derived
+SunshineDuration,weather,seconds per hour or unit used in cleaned data,Open-Meteo or derived
+CloudCoverHigh,weather,unit used in cleaned data,Open-Meteo or derived
+hour_of_day,time,"hour, e.g. 8–17",computed by app from selected time
+latitude,geo/location,decimal degrees,geocoding / selected location
+longitude,geo/location,decimal degrees,geocoding / selected location
