@@ -113,6 +113,8 @@ const translations = {
     value: "ค่า",
     todayTrend: "แนวโน้มวันนี้",
     today: "วันนี้",
+    trendLoading: "กำลังคำนวณแนวโน้มจริง",
+    trendUnavailable: "ไม่สามารถแสดงแนวโน้มรายชั่วโมงได้ในขณะนี้",
     safetyAdvice: "คำแนะนำเพื่อความปลอดภัย",
     basedOnRisk: "อ้างอิงระดับความเสี่ยง",
     details: "ดูรายละเอียดเพิ่มเติม",
@@ -189,6 +191,8 @@ const translations = {
     value: "Value",
     todayTrend: "Today Trend",
     today: "Today",
+    trendLoading: "Calculating real trend",
+    trendUnavailable: "Hourly trend is not available right now.",
     safetyAdvice: "Safety Advice",
     basedOnRisk: "Based on risk level",
     details: "View more details",
@@ -477,10 +481,9 @@ function findNearestHourlyIndex(times, datetimeLocal) {
   return nearestIndex;
 }
 
-function normalizeOpenMeteo(raw, datetimeLocal) {
+function weatherFromHourly(raw, hourlyIndex) {
   const current = raw.current ?? {};
   const hourly = raw.hourly ?? {};
-  const hourlyIndex = findNearestHourlyIndex(hourly.time, datetimeLocal);
   const temp = hourly.temperature_2m?.[hourlyIndex] ?? current.temperature_2m;
   const humidity = hourly.relative_humidity_2m?.[hourlyIndex] ?? current.relative_humidity_2m;
   const cloudCover = hourly.cloud_cover?.[hourlyIndex] ?? current.cloud_cover ?? 0;
@@ -512,6 +515,12 @@ function normalizeOpenMeteo(raw, datetimeLocal) {
     fetchedAt: new Date().toISOString(),
     hourlyTime: hourly.time?.[hourlyIndex] ?? current.time ?? "",
   };
+}
+
+function normalizeOpenMeteo(raw, datetimeLocal) {
+  const hourly = raw.hourly ?? {};
+  const hourlyIndex = findNearestHourlyIndex(hourly.time, datetimeLocal);
+  return weatherFromHourly(raw, hourlyIndex);
 }
 
 async function fetchOpenMeteo(lat, lon, datetimeLocal) {
@@ -560,6 +569,68 @@ async function fetchOpenMeteo(lat, lon, datetimeLocal) {
 
 function apiUrl(path) {
   return `${WBGT_API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function buildModelFeatures(weather, hour, latitude, longitude) {
+  return {
+    Temperature_2m: weather.temp,
+    DewPoint_2m: weather.dewPoint,
+    WetBulb_2m: weather.wetBulb,
+    DiffuseRadiation: weather.diffuseRadiation,
+    SunshineDuration: weather.sunshineDuration,
+    CloudCoverHigh: weather.cloudCoverHigh,
+    hour_of_day: hour,
+    latitude,
+    longitude,
+  };
+}
+
+async function predictWbgt(features) {
+  const response = await fetch(apiUrl("/predict-wbgt"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ features }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Prediction unavailable");
+  }
+
+  const data = await response.json();
+  const wbgt = data?.data?.wbgt_c ?? data?.wbgt_c;
+
+  if (!Number.isFinite(Number(wbgt))) {
+    throw new Error("Invalid prediction");
+  }
+
+  return {
+    wbgt: Number(wbgt),
+    model: data?.data?.model ?? data?.model ?? null,
+  };
+}
+
+async function buildRealTrendData({ rawWeather, date, latitude, longitude, caf }) {
+  const hourly = rawWeather?.hourly ?? {};
+  const hours = Array.from({ length: 13 }, (_, index) => index + 6);
+
+  return Promise.all(
+    hours.map(async (hour) => {
+      const datetime = `${date}T${String(hour).padStart(2, "0")}:00`;
+      const hourlyIndex = findNearestHourlyIndex(hourly.time, datetime);
+      const weather = weatherFromHourly(rawWeather, hourlyIndex);
+      const features = buildModelFeatures(weather, hour, latitude, longitude);
+      const prediction = await predictWbgt(features);
+      const wbgt = prediction.wbgt;
+      const effectiveWbgt = wbgt + caf;
+
+      return {
+        time: `${String(hour).padStart(2, "0")}:00`,
+        WBGT: Number(wbgt.toFixed(1)),
+        "Effective WBGT": Number(effectiveWbgt.toFixed(1)),
+        "Heat Index": Number(heatIndexCelsius(weather.temp, weather.humidity).toFixed(1)),
+      };
+    }),
+  );
 }
 
 function MapClickHandler({ onPick }) {
@@ -714,6 +785,11 @@ function App() {
   const [apiStatus, setApiStatus] = useState(() => translations[loadLanguage()].fillInfo);
   const [evaluationError, setEvaluationError] = useState("");
   const [backendWbgt, setBackendWbgt] = useState(null);
+  const [trendState, setTrendState] = useState({
+    status: "idle",
+    data: [],
+    error: "",
+  });
   const t = translations[language];
 
   const manualLatitude = Number(form.latitude);
@@ -793,15 +869,7 @@ function App() {
     { name: "Heat Index", value: Number(result.heatIndex.toFixed(1)), fill: "#e62e42" },
   ];
 
-  const trendData = ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00"].map((time, index) => {
-    const curve = [-4.2, -2.4, 0.8, 2.4, 1.6, -0.8, -2.7][index];
-    return {
-      time,
-      WBGT: Number((result.wbgt + curve).toFixed(1)),
-      "Effective WBGT": Number((result.effectiveWbgt + curve).toFixed(1)),
-      "Heat Index": Number((result.heatIndex + curve * 1.15).toFixed(1)),
-    };
-  });
+  const trendData = trendState.data;
 
   useEffect(() => {
     let ignore = false;
@@ -833,6 +901,7 @@ function App() {
   function resetEvaluation() {
     setHasEvaluated(false);
     setBackendWbgt(null);
+    setTrendState({ status: "idle", data: [], error: "" });
     setEvaluationError("");
     setApiStatus(t.fillInfo);
   }
@@ -923,18 +992,9 @@ function App() {
     const hour = getHourOfDay(form.datetime);
     const latitude = weatherCoordinates?.lat ?? DEFAULT_COORDINATES.latitude;
     const longitude = weatherCoordinates?.lon ?? DEFAULT_COORDINATES.longitude;
+    const features = buildModelFeatures(weather, hour, latitude, longitude);
     const payload = {
-      features: {
-        Temperature_2m: weather.temp,
-        DewPoint_2m: weather.dewPoint,
-        WetBulb_2m: weather.wetBulb,
-        DiffuseRadiation: weather.diffuseRadiation,
-        SunshineDuration: weather.sunshineDuration,
-        CloudCoverHigh: weather.cloudCoverHigh,
-        hour_of_day: hour,
-        latitude,
-        longitude,
-      },
+      features,
       metadata: {
         location_source: form.mode === "gps" ? "gps" : "manual_coordinates",
         datetime: form.datetime,
@@ -963,18 +1023,8 @@ function App() {
     let modelName = null;
 
     try {
-      const response = await fetch(apiUrl("/predict-wbgt"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Backend unavailable");
-      }
-
-      const data = await response.json();
-      predictedWbgt = data?.data?.wbgt_c ?? data?.wbgt_c ?? null;
+      const data = await predictWbgt(payload.features);
+      predictedWbgt = data.wbgt;
       modelName = data?.data?.model ?? data?.model ?? null;
       evaluatedStatus = t.evaluated;
       setBackendWbgt(predictedWbgt);
@@ -987,6 +1037,8 @@ function App() {
       setLoading(false);
       return;
     }
+
+    setTrendState({ status: "loading", data: [], error: "" });
 
     const prediction = buildPrediction(form, predictedWbgt, weather);
     const historyRecord = createHistoryRecord({
@@ -1005,6 +1057,18 @@ function App() {
     });
 
     try {
+      const trend = await buildRealTrendData({
+        rawWeather: weatherState.data,
+        date: getDatePart(form.datetime),
+        latitude,
+        longitude,
+        caf: prediction.cafOutput.caf,
+      });
+      setTrendState({ status: "success", data: trend, error: "" });
+      setActiveTab("summary");
+      setHasEvaluated(true);
+    } catch {
+      setTrendState({ status: "error", data: [], error: t.trendUnavailable });
       setActiveTab("summary");
       setHasEvaluated(true);
     } finally {
@@ -1407,18 +1471,25 @@ function App() {
                   <h3>{t.todayTrend}</h3>
                   <span className="status-pill">{t.today}</span>
                 </div>
-                <ResponsiveContainer width="100%" height={240}>
-                  <LineChart data={trendData}>
-                    <CartesianGrid vertical={false} stroke="#e5edf7" />
-                    <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-                    <YAxis unit="°C" tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value, name) => [`${value} °C`, name]} />
-                    <Legend />
-                    <Line type="monotone" dataKey="WBGT" stroke="#1476d4" strokeWidth={3} dot={false} />
-                    <Line type="monotone" dataKey="Effective WBGT" stroke="#f26b2f" strokeWidth={3} dot={false} />
-                    <Line type="monotone" dataKey="Heat Index" stroke="#e62e42" strokeWidth={3} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {trendState.status === "success" ? (
+                  <ResponsiveContainer width="100%" height={240}>
+                    <LineChart data={trendData}>
+                      <CartesianGrid vertical={false} stroke="#e5edf7" />
+                      <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                      <YAxis unit="°C" tick={{ fontSize: 12 }} />
+                      <Tooltip formatter={(value, name) => [`${value} °C`, name]} />
+                      <Legend />
+                      <Line type="monotone" dataKey="WBGT" stroke="#1476d4" strokeWidth={3} dot={false} />
+                      <Line type="monotone" dataKey="Effective WBGT" stroke="#f26b2f" strokeWidth={3} dot={false} />
+                      <Line type="monotone" dataKey="Heat Index" stroke="#e62e42" strokeWidth={3} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="chart-message">
+                    <AlertTriangle size={18} />
+                    {t.trendUnavailable}
+                  </div>
+                )}
               </div>
             </div>
           )}

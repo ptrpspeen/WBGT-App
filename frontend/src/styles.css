@@ -934,6 +934,18 @@ input:focus {
   padding: 15px;
 }
 
+.chart-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 220px;
+  padding: 16px;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+}
+
 .chart-heading {
   display: flex;
   align-items: center;
