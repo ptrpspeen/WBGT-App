@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "features": {
+        "Temperature_2m": 33.5,
+        "DewPoint_2m": 25.2,
+        "WetBulb_2m": 28.0,
+        "DiffuseRadiation": 180,
+        "SunshineDuration": 3300,
+        "CloudCoverHigh": 20,
+        "hour_of_day": 13,
+        "latitude": 14.7225,
+        "longitude": 101.3351
+      },
+      "metadata": {
+        "datetime": "2026-04-25T13:00:00+07:00",
+        "location_id": "pakchong"
+      }
+    },
+    {
+      "features": {
+        "Temperature_2m": 34.1,
+        "DewPoint_2m": 25.4,
+        "WetBulb_2m": 28.3,
+        "DiffuseRadiation": 210,
+        "SunshineDuration": 3600,
+        "CloudCoverHigh": 18,
+        "hour_of_day": 14,
+        "latitude": 14.7225,
+        "longitude": 101.3351
+      },
+      "metadata": {
+        "datetime": "2026-04-25T14:00:00+07:00",
+        "location_id": "pakchong"
+      }
+    }
+  ]
+}

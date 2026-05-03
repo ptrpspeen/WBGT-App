@@ -104,6 +104,14 @@ curl -X POST http://localhost:8000/predict-wbgt \
   --data @backend/examples/sample_request.json
 ```
 
+Batch prediction for multiple hours:
+
+```bash
+curl -X POST http://localhost:8000/predict-wbgt-batch \
+  -H "Content-Type: application/json" \
+  --data @backend/examples/batch_request.json
+```
+
 ## Expected Response
 
 With the bundled `final_xgb_geo_model_bundle_for_app.rds` artifact currently in this project, the sample request produces approximately `29.77` Celsius. If a separate handoff expects `31.84`, verify that the model artifact and training-time unit conventions are the same.
@@ -114,6 +122,75 @@ With the bundled `final_xgb_geo_model_bundle_for_app.rds` artifact currently in 
   "model": "xgboost_geo",
   "model_version": "xgb-geo-v1",
   "unit": "celsius"
+}
+```
+
+## Batch Prediction
+
+Use `POST /predict-wbgt-batch` when API1 already has several model-ready hourly rows. The recommended request shape is `items`, where each item contains a `features` object and optional row-level `metadata`.
+
+```json
+{
+  "items": [
+    {
+      "features": {
+        "Temperature_2m": 33.5,
+        "DewPoint_2m": 25.2,
+        "WetBulb_2m": 28.0,
+        "DiffuseRadiation": 180,
+        "SunshineDuration": 3300,
+        "CloudCoverHigh": 20,
+        "hour_of_day": 13,
+        "latitude": 14.7225,
+        "longitude": 101.3351
+      },
+      "metadata": {
+        "datetime": "2026-04-25T13:00:00+07:00",
+        "location_id": "pakchong"
+      }
+    }
+  ]
+}
+```
+
+Successful batch response:
+
+```json
+{
+  "predictions": [
+    {
+      "index": 1,
+      "wbgt_c": 29.77,
+      "metadata": {
+        "datetime": "2026-04-25T13:00:00+07:00",
+        "location_id": "pakchong"
+      }
+    }
+  ],
+  "count": 1,
+  "model": "xgboost_geo",
+  "model_version": "xgb-geo-v1",
+  "unit": "celsius"
+}
+```
+
+The endpoint also accepts a shorter shape when metadata is not needed:
+
+```json
+{
+  "features": [
+    {
+      "Temperature_2m": 33.5,
+      "DewPoint_2m": 25.2,
+      "WetBulb_2m": 28.0,
+      "DiffuseRadiation": 180,
+      "SunshineDuration": 3300,
+      "CloudCoverHigh": 20,
+      "hour_of_day": 13,
+      "latitude": 14.7225,
+      "longitude": 101.3351
+    }
+  ]
 }
 ```
 
@@ -135,6 +212,7 @@ API1 should:
 - Fetch or derive the six weather variables.
 - Compute local `hour_of_day` from the selected prediction time.
 - Send `latitude` and `longitude` directly as decimal degrees.
+- For hourly ranges, send one item per hour to `/predict-wbgt-batch` and keep timestamps in item-level `metadata`.
 - Preserve exact case-sensitive feature names.
 - Avoid sending `Area` and old cumulative `Time`; they are not used by this model.
 

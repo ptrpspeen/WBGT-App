@@ -14,3 +14,8 @@ curl -s -X POST "${BASE_URL}/predict-wbgt" \
   -H "Content-Type: application/json" \
   --data @"${SCRIPT_DIR}/sample_request.json"
 printf "\n"
+
+curl -s -X POST "${BASE_URL}/predict-wbgt-batch" \
+  -H "Content-Type: application/json" \
+  --data @"${SCRIPT_DIR}/batch_request.json"
+printf "\n"

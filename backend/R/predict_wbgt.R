@@ -25,3 +25,11 @@ predict_wbgt <- function(model, features, required_features) {
 
   as.numeric(prediction[[1]])
 }
+
+predict_wbgt_batch <- function(model, features_list, required_features) {
+  vapply(
+    features_list,
+    function(features) predict_wbgt(model, features, required_features),
+    numeric(1)
+  )
+}

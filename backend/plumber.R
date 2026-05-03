@@ -39,6 +39,57 @@ metadata_payload <- function() {
   )
 }
 
+parse_request_body <- function(req) {
+  tryCatch(
+    jsonlite::fromJSON(req$postBody, simplifyVector = FALSE),
+    error = function(e) NULL
+  )
+}
+
+as_batch_items <- function(body) {
+  if (!is.null(body$items) && is.list(body$items)) {
+    return(body$items)
+  }
+
+  if (!is.null(body$features) && is.list(body$features)) {
+    has_named_single_feature_set <- all(REQUIRED_FEATURES %in% names(body$features))
+    if (!has_named_single_feature_set) {
+      return(lapply(body$features, function(features) list(features = features)))
+    }
+  }
+
+  NULL
+}
+
+validate_batch_items <- function(items) {
+  details <- character()
+
+  if (is.null(items) || length(items) == 0) {
+    return(list(
+      valid = FALSE,
+      details = c("Request body must contain a non-empty items array or features array")
+    ))
+  }
+
+  for (index in seq_along(items)) {
+    item <- items[[index]]
+    features <- if (!is.null(item$features)) item$features else item
+    validation <- validate_features(features, REQUIRED_FEATURES)
+
+    if (!isTRUE(validation$valid)) {
+      details <- c(
+        details,
+        paste0("Item ", index, ": ", validation$details)
+      )
+    }
+  }
+
+  list(
+    valid = length(details) == 0,
+    details = details
+  )
+}
+
 #* @filter cors
 function(req, res) {
   res$setHeader("Access-Control-Allow-Origin", "*")
@@ -89,10 +140,7 @@ function(req, res) {
     return(model_not_loaded_response(res))
   }
 
-  body <- tryCatch(
-    jsonlite::fromJSON(req$postBody, simplifyVector = FALSE),
-    error = function(e) NULL
-  )
+  body <- parse_request_body(req)
 
   if (is.null(body) || is.null(body$features)) {
     return(error_response(
@@ -144,4 +192,91 @@ function(req, res) {
   }
 
   success_response(response)
+}
+
+#* Predict WBGT for multiple rows
+#* @serializer unboxedJSON
+#* @post /predict-wbgt-batch
+function(req, res) {
+  if (!isTRUE(model_state$loaded)) {
+    return(model_not_loaded_response(res))
+  }
+
+  body <- parse_request_body(req)
+  if (is.null(body)) {
+    return(error_response(
+      res = res,
+      status = 400,
+      code = "INVALID_INPUT",
+      message = "Invalid batch input",
+      details = c("Request body must be valid JSON")
+    ))
+  }
+
+  items <- as_batch_items(body)
+  validation <- validate_batch_items(items)
+  if (!isTRUE(validation$valid)) {
+    return(error_response(
+      res = res,
+      status = 400,
+      code = "INVALID_INPUT",
+      message = "Invalid batch input",
+      details = validation$details
+    ))
+  }
+
+  standardized_items <- lapply(items, function(item) {
+    features <- if (!is.null(item$features)) item$features else item
+    standardized <- standardize_features(features)
+
+    list(
+      features = standardized$features,
+      warnings = standardized$warnings,
+      metadata = null_coalesce(item$metadata, NULL)
+    )
+  })
+
+  predictions <- tryCatch(
+    predict_wbgt_batch(
+      model_state$model,
+      lapply(standardized_items, function(item) item$features),
+      REQUIRED_FEATURES
+    ),
+    error = function(e) e
+  )
+
+  if (inherits(predictions, "error")) {
+    return(error_response(
+      res = res,
+      status = 500,
+      code = "PREDICTION_FAILED",
+      message = "Failed to generate WBGT predictions",
+      details = conditionMessage(predictions)
+    ))
+  }
+
+  results <- lapply(seq_along(predictions), function(index) {
+    item_response <- list(
+      index = index,
+      wbgt_c = round(predictions[[index]], 2)
+    )
+
+    if (!is.null(standardized_items[[index]]$metadata)) {
+      item_response$metadata <- standardized_items[[index]]$metadata
+    }
+
+    if (length(standardized_items[[index]]$warnings) > 0) {
+      item_response$warnings <- standardized_items[[index]]$warnings
+    }
+
+    item_response
+  })
+
+  success_response(list(
+    predictions = results,
+    count = length(results),
+    model = MODEL_NAME,
+    model_version = MODEL_VERSION,
+    unit = TARGET_UNIT
+  ))
 }
