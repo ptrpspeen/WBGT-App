@@ -111,8 +111,7 @@ const translations = {
     feelsLike: "อุณหภูมิที่รู้สึก",
     compareIndexes: "เปรียบเทียบค่าดัชนี",
     value: "ค่า",
-    todayTrend: "แนวโน้มวันนี้",
-    today: "วันนี้",
+    hourlyTrend: "แนวโน้มรายชั่วโมง",
     trendLoading: "กำลังคำนวณแนวโน้มจริง",
     trendUnavailable: "ไม่สามารถแสดงแนวโน้มรายชั่วโมงได้ในขณะนี้",
     safetyAdvice: "คำแนะนำเพื่อความปลอดภัย",
@@ -189,8 +188,7 @@ const translations = {
     feelsLike: "Feels-like temperature",
     compareIndexes: "Index Comparison",
     value: "Value",
-    todayTrend: "Today Trend",
-    today: "Today",
+    hourlyTrend: "Hourly Trend",
     trendLoading: "Calculating real trend",
     trendUnavailable: "Hourly trend is not available right now.",
     safetyAdvice: "Safety Advice",
@@ -761,6 +759,20 @@ function formatDateTimeThai(datetimeLocal) {
   return datetimeLocal ? datetimeLocal.replace("T", " ") : "-";
 }
 
+function formatDateLabel(datetimeLocal, language) {
+  const date = getDatePart(datetimeLocal);
+  if (!date) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(language === "en" ? "en-GB" : "th-TH", {
+    timeZone: "Asia/Bangkok",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${date}T00:00:00+07:00`));
+}
+
 function optionLabel(option, language) {
   return language === "en" ? option.labelEn : option.label;
 }
@@ -915,6 +927,7 @@ function App() {
   ];
 
   const trendData = trendState.data;
+  const selectedDateLabel = formatDateLabel(form.datetime, language);
 
   useEffect(() => {
     let ignore = false;
@@ -1522,8 +1535,8 @@ function App() {
 
               <div className="chart-panel">
                 <div className="chart-heading">
-                  <h3>{t.todayTrend}</h3>
-                  <span className="status-pill">{t.today}</span>
+                  <h3>{t.hourlyTrend}</h3>
+                  <span className="status-pill">{selectedDateLabel}</span>
                 </div>
                 {trendState.status === "loading" ? (
                   <div className="chart-message">
