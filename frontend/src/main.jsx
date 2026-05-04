@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
@@ -834,6 +834,7 @@ function App() {
     data: [],
     error: "",
   });
+  const evaluationRunRef = useRef(0);
   const t = translations[language];
 
   const manualLatitude = Number(form.latitude);
@@ -943,6 +944,7 @@ function App() {
   }, [canShowWeatherContext, weatherCoordinates?.lat, weatherCoordinates?.lon, selectedWeatherDate]);
 
   function resetEvaluation() {
+    evaluationRunRef.current += 1;
     setHasEvaluated(false);
     setBackendWbgt(null);
     setTrendState({ status: "idle", data: [], error: "" });
@@ -1028,8 +1030,11 @@ function App() {
 
   async function evaluateRisk(event) {
     event.preventDefault();
+    const runId = evaluationRunRef.current + 1;
+    evaluationRunRef.current = runId;
     setLoading(true);
     setEvaluationError("");
+    setTrendState({ status: "idle", data: [], error: "" });
     setApiStatus(t.evaluating);
 
     const weather = result.weather;
@@ -1100,24 +1105,29 @@ function App() {
       return next;
     });
 
-    try {
-      const trend = await buildRealTrendData({
-        rawWeather: weatherState.data,
-        date: getDatePart(form.datetime),
-        latitude,
-        longitude,
-        caf: prediction.cafOutput.caf,
+    setActiveTab("summary");
+    setHasEvaluated(true);
+    setLoading(false);
+
+    buildRealTrendData({
+      rawWeather: weatherState.data,
+      date: getDatePart(form.datetime),
+      latitude,
+      longitude,
+      caf: prediction.cafOutput.caf,
+    })
+      .then((trend) => {
+        if (evaluationRunRef.current !== runId) {
+          return;
+        }
+        setTrendState({ status: "success", data: trend, error: "" });
+      })
+      .catch(() => {
+        if (evaluationRunRef.current !== runId) {
+          return;
+        }
+        setTrendState({ status: "error", data: [], error: t.trendUnavailable });
       });
-      setTrendState({ status: "success", data: trend, error: "" });
-      setActiveTab("summary");
-      setHasEvaluated(true);
-    } catch {
-      setTrendState({ status: "error", data: [], error: t.trendUnavailable });
-      setActiveTab("summary");
-      setHasEvaluated(true);
-    } finally {
-      setLoading(false);
-    }
   }
 
   function clearHistory() {
@@ -1515,7 +1525,12 @@ function App() {
                   <h3>{t.todayTrend}</h3>
                   <span className="status-pill">{t.today}</span>
                 </div>
-                {trendState.status === "success" ? (
+                {trendState.status === "loading" ? (
+                  <div className="chart-message">
+                    <RefreshCw className="spin" size={18} />
+                    {t.trendLoading}
+                  </div>
+                ) : trendState.status === "success" ? (
                   <ResponsiveContainer width="100%" height={240}>
                     <LineChart data={trendData}>
                       <CartesianGrid vertical={false} stroke="#e5edf7" />
