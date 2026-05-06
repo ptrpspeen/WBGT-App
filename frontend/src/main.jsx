@@ -11,6 +11,7 @@ import {
   ChevronRight,
   CloudRain,
   Droplets,
+  HardHat,
   History,
   Info,
   Layers,
@@ -25,7 +26,6 @@ import {
   Sun,
   ThermometerSun,
   Trash2,
-  Umbrella,
   Wind,
 } from "lucide-react";
 import {
@@ -248,7 +248,7 @@ const clothingOptions = [
     example: "เสื้อแขนยาวและกางเกงขายาว หรือชุดคลุมทั้งตัว",
     exampleEn: "Long-sleeve shirt and long pants, or full-body coverall",
     caf: 0,
-    icon: ShieldCheck,
+    icon: HardHat,
   },
   {
     id: "synthetic_coverall",
@@ -257,7 +257,7 @@ const clothingOptions = [
     example: "ชุดคลุมทั้งตัวที่ทำจากผ้าใยสังเคราะห์",
     exampleEn: "Full-body coverall made from synthetic fabric",
     caf: 0.5,
-    icon: Layers,
+    icon: ShieldCheck,
   },
   {
     id: "multiple_layers",
@@ -266,7 +266,7 @@ const clothingOptions = [
     example: "สวมเสื้อผ้าหลายชั้นหรืออุปกรณ์ป้องกันร่วมกัน",
     exampleEn: "Multiple clothing layers or combined protective equipment",
     caf: 3,
-    icon: Shield,
+    icon: Layers,
   },
 ];
 
@@ -368,7 +368,6 @@ const recommendations = {
   moderate: ["Extreme Caution: เพิ่มระยะเวลาพัก", "อาจเกิดตะคริวหรือหน้ามืด", "ดื่มน้ำทุก 15-20 นาที", "ลดความหนักของงาน", "ควรมีเพื่อนร่วมงานสังเกตอาการกัน"],
   high: ["Danger: อาจเกิดตะคริวแดด อ่อนเพลีย และ heat stroke", "ควรหลีกเลี่ยงงานหนัก", "มีจุดดื่มน้ำเย็น", "ติดตามอาการอย่างใกล้ชิด"],
   veryHigh: ["Extreme Danger: อาจเกิด heat stroke", "ให้หยุดงานกลางแจ้ง", "หากมีอาการสับสน หมดสติ ตัวร้อนจัด หรือเหงื่อไม่ออก รีบแจ้งแพทย์ โทร 1669"],
-  extreme: ["Extreme Danger: อาจเกิด heat stroke", "ให้หยุดงานกลางแจ้ง", "หากมีอาการสับสน หมดสติ ตัวร้อนจัด หรือเหงื่อไม่ออก รีบแจ้งแพทย์ โทร 1669"],
 };
 
 const recommendationsEn = {
@@ -376,7 +375,6 @@ const recommendationsEn = {
   moderate: ["Extreme Caution: increase rest time.", "Heat cramps or dizziness may occur.", "Drink water every 15-20 minutes.", "Reduce work intensity.", "Co-workers should monitor each other for symptoms."],
   high: ["Danger: heat cramps, heat exhaustion, and heat stroke may occur.", "Avoid heavy work.", "Provide cool drinking water points.", "Monitor symptoms closely."],
   veryHigh: ["Extreme Danger: heat stroke may occur.", "Stop outdoor work.", "If confusion, loss of consciousness, very hot body, or no sweating occurs, seek medical help immediately."],
-  extreme: ["Extreme Danger: heat stroke may occur.", "Stop outdoor work.", "If confusion, loss of consciousness, very hot body, or no sweating occurs, seek medical help immediately."],
 };
 
 const fallbackWeather = {
@@ -459,16 +457,13 @@ function wetBulbCelsius(tempC, humidity) {
 
 function classifyRisk(effectiveWbgt) {
   if (effectiveWbgt >= 38) {
-    return { key: "extreme", label: "เสี่ยงสูงมาก", labelEn: "Extreme Risk", color: "#e62e42", pct: 98 };
-  }
-  if (effectiveWbgt >= 34) {
-    return { key: "veryHigh", label: "เสี่ยงสูง", labelEn: "Very High Risk", color: "#f26b2f", pct: 78 };
+    return { key: "veryHigh", label: "สูงมาก", labelEn: "Very High", color: "#e62e42", pct: 94 };
   }
   if (effectiveWbgt >= 31) {
-    return { key: "high", label: "สูง", labelEn: "High", color: "#f5ad24", pct: 58 };
+    return { key: "high", label: "สูง", labelEn: "High", color: "#f26b2f", pct: 68 };
   }
   if (effectiveWbgt >= 28) {
-    return { key: "moderate", label: "ปานกลาง", labelEn: "Moderate", color: "#9ccf3b", pct: 37 };
+    return { key: "moderate", label: "ปานกลาง", labelEn: "Moderate", color: "#f5ad24", pct: 42 };
   }
   return { key: "low", label: "ต่ำ", labelEn: "Low", color: "#28b95f", pct: 16 };
 }
@@ -1496,7 +1491,7 @@ function App() {
 
             <fieldset className="caf-fieldset">
               <legend>
-                <Shirt size={18} /> {t.clothingType}
+                <HardHat size={18} /> {t.clothingType}
 	                <button
 	                  className="mini-info-button"
 	                  type="button"
@@ -1552,7 +1547,7 @@ function App() {
                   checked={form.hoodCoverage}
                   onChange={(event) => updateForm("hoodCoverage", event.target.checked)}
                 />
-                <span><Umbrella size={18} /> {t.hoodCoverage}</span>
+                <span><Shield size={18} /> {t.hoodCoverage}</span>
                 <strong>+1°C</strong>
               </label>
             </fieldset>
@@ -1860,8 +1855,7 @@ function IndexCard({ label, sublabel, value, tone, infoKey, openInfo, toggleInfo
 
   return (
     <article className={`index-card ${tone}`}>
-      <span>
-        {sublabel}
+      <div className="index-card-top">
         <button
           className="index-info-button"
           type="button"
@@ -1874,7 +1868,7 @@ function IndexCard({ label, sublabel, value, tone, infoKey, openInfo, toggleInfo
         >
           <Info size={13} />
         </button>
-      </span>
+      </div>
       <h3>{label}</h3>
       <strong>{value.toFixed(1)}<small>°C</small></strong>
       {open && (
