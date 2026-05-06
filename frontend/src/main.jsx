@@ -110,10 +110,10 @@ const translations = {
     chart: "กราฟ",
     advice: "คำแนะนำ",
     overallRisk: "ระดับความเสี่ยงโดยรวม",
-    low: "ต่ำ",
-    moderate: "ปานกลาง",
-    high: "สูง",
-    veryHigh: "สูงมาก",
+    low: "เฝ้าระวัง",
+    moderate: "เฝ้าระวังมาก",
+    high: "อันตราย",
+    veryHigh: "อันตรายมาก",
     model: "ค่าความร้อนในสภาพแวดล้อมกลางแจ้ง",
     clothingCaf: "ค่าความร้อน WBGT ที่ปรับตามชนิดเสื้อผ้าหรืออุปกรณ์ป้องกันที่สวมใส่",
     feelsLike: "ค่าความร้อนที่ร่างกายรู้สึกจากอุณหภูมิอากาศและความชื้น",
@@ -194,10 +194,10 @@ const translations = {
     chart: "Chart",
     advice: "Advice",
     overallRisk: "Overall Risk Level",
-    low: "Low",
-    moderate: "Moderate",
-    high: "High",
-    veryHigh: "Very High",
+    low: "Caution",
+    moderate: "Extreme Caution",
+    high: "Danger",
+    veryHigh: "Extreme Danger",
     model: "Outdoor environmental heat level",
     clothingCaf: "WBGT adjusted by clothing type or worn protective equipment",
     feelsLike: "Heat felt by the body based on air temperature and humidity",
@@ -364,10 +364,10 @@ const weatherMetrics = [
 ];
 
 const recommendations = {
-  low: ["Caution: ดื่มน้ำบ่อยๆ", "ลดกิจกรรมหนักกลางแจ้ง", "อาจอ่อนเพลียและเหนื่อยง่าย"],
-  moderate: ["Extreme Caution: เพิ่มระยะเวลาพัก", "อาจเกิดตะคริวหรือหน้ามืด", "ดื่มน้ำทุก 15-20 นาที", "ลดความหนักของงาน", "ควรมีเพื่อนร่วมงานสังเกตอาการกัน"],
-  high: ["Danger: อาจเกิดตะคริวแดด อ่อนเพลีย และ heat stroke", "ควรหลีกเลี่ยงงานหนัก", "มีจุดดื่มน้ำเย็น", "ติดตามอาการอย่างใกล้ชิด"],
-  veryHigh: ["Extreme Danger: อาจเกิด heat stroke", "ให้หยุดงานกลางแจ้ง", "หากมีอาการสับสน หมดสติ ตัวร้อนจัด หรือเหงื่อไม่ออก รีบแจ้งแพทย์ โทร 1669"],
+  low: ["เฝ้าระวัง: ดื่มน้ำบ่อยๆ", "ลดกิจกรรมหนักกลางแจ้ง", "อาจอ่อนเพลียและเหนื่อยง่าย"],
+  moderate: ["เฝ้าระวังมาก: เพิ่มระยะเวลาพัก", "อาจเกิดตะคริวหรือหน้ามืด", "ดื่มน้ำทุก 15-20 นาที", "ลดความหนักของงาน", "ควรมีเพื่อนร่วมงานสังเกตอาการกัน"],
+  high: ["อันตราย: อาจเกิดตะคริวแดด อ่อนเพลีย และ heat stroke", "ควรหลีกเลี่ยงงานหนัก", "มีจุดดื่มน้ำเย็น", "ติดตามอาการอย่างใกล้ชิด"],
+  veryHigh: ["อันตรายมาก: อาจเกิด heat stroke", "ให้หยุดงานกลางแจ้ง", "หากมีอาการสับสน หมดสติ ตัวร้อนจัด หรือเหงื่อไม่ออก รีบแจ้งแพทย์ โทร 1669"],
 };
 
 const recommendationsEn = {
@@ -457,15 +457,15 @@ function wetBulbCelsius(tempC, humidity) {
 
 function classifyRisk(effectiveWbgt) {
   if (effectiveWbgt >= 38) {
-    return { key: "veryHigh", label: "สูงมาก", labelEn: "Very High", color: "#e62e42", pct: 94 };
+    return { key: "veryHigh", label: "อันตรายมาก", labelEn: "Extreme Danger", color: "#e62e42", pct: 94 };
   }
   if (effectiveWbgt >= 31) {
-    return { key: "high", label: "สูง", labelEn: "High", color: "#f26b2f", pct: 68 };
+    return { key: "high", label: "อันตราย", labelEn: "Danger", color: "#f26b2f", pct: 68 };
   }
   if (effectiveWbgt >= 28) {
-    return { key: "moderate", label: "ปานกลาง", labelEn: "Moderate", color: "#f5ad24", pct: 42 };
+    return { key: "moderate", label: "เฝ้าระวังมาก", labelEn: "Extreme Caution", color: "#f5ad24", pct: 42 };
   }
-  return { key: "low", label: "ต่ำ", labelEn: "Low", color: "#28b95f", pct: 16 };
+  return { key: "low", label: "เฝ้าระวัง", labelEn: "Caution", color: "#28b95f", pct: 16 };
 }
 
 function findNearestHourlyIndex(times, datetimeLocal) {
