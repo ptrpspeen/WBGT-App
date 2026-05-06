@@ -261,7 +261,7 @@ const clothingOptions = [
   },
   {
     id: "multiple_layers",
-    label: "สวมเสื้อผ้ามากกว่าสองชิ้นขึ้นไป",
+    label: "สวมเสื้อผ้ามากกว่าสองชั้นขึ้นไป",
     labelEn: "More than two clothing layers",
     example: "สวมเสื้อผ้าหลายชั้นหรืออุปกรณ์ป้องกันร่วมกัน",
     exampleEn: "Multiple clothing layers or combined protective equipment",
