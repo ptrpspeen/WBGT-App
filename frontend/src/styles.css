@@ -228,8 +228,10 @@ select,
 input[type="date"],
 input[type="number"] {
   display: block;
+  position: relative;
   width: 100%;
   max-width: 100%;
+  height: 46px;
   min-height: 46px;
   min-width: 0;
   padding: 0 12px;
@@ -241,19 +243,28 @@ input[type="number"] {
 }
 
 input[type="date"] {
-  -webkit-appearance: none;
-  appearance: none;
   inline-size: 100%;
+  min-inline-size: 100%;
 }
 
 input[type="date"]::-webkit-date-and-time-value {
+  display: block;
+  width: 100%;
   min-height: 1.5em;
   text-align: left;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: auto;
 }
 
 .datetime-grid {
   display: grid;
   gap: 10px;
+}
+
+.datetime-grid label {
+  width: 100%;
 }
 
 .field-hint {
