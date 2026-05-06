@@ -132,7 +132,7 @@ const translations = {
     noHistoryHelp: "เมื่อกดดูผลการประเมิน ระบบจะบันทึกผลล่าสุดไว้ในอุปกรณ์นี้ด้วย localStorage",
     assess: "ประเมิน",
     history: "ประวัติ",
-    footerOrg: "สนับสนุนภายใต้ทุนวิจัยของ มทส. สกสว. และ ววน. รหัสโครงการ 215731“",
+    footerOrg: "สนับสนุนภายใต้ทุนวิจัยของ มทส. สกสว. และ ววน. รหัสโครงการ 215731",
     footerContact: "ติดต่อทีมวิจัย: heat-risk@example.org",
     gpsSource: "GPS ปัจจุบัน",
     mapSource: "เลือกบนแผนที่",
