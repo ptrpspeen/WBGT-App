@@ -1513,7 +1513,7 @@ function App() {
               )}
 
               <div className="caf-summary">
-                <span>Effective WBGT = WBGT + CAF</span>
+                <span>Effective WBGT = WBGTout + CAF</span>
                 <strong>{result.cafOutput.caf > 0 ? `+${result.cafOutput.caf}` : result.cafOutput.caf}°C</strong>
               </div>
 
