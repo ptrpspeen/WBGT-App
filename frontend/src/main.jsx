@@ -25,6 +25,7 @@ import {
   Sun,
   ThermometerSun,
   Trash2,
+  Umbrella,
   Wind,
 } from "lucide-react";
 import {
@@ -54,7 +55,8 @@ const MAX_HISTORY_ITEMS = 20;
 
 const translations = {
   th: {
-    appTitle: "ประเมินความเสี่ยงจากความร้อนกลางแจ้ง",
+    appEyebrow: "Heat Risk for Outdoor Work",
+    appTitle: "ความเสี่ยงจากความร้อนในการทำงานกลางแจ้ง",
     aboutLabel: "เกี่ยวกับแอป",
     aboutText: "ระบบช่วยประเมินความเสี่ยงจากความร้อนกลางแจ้ง โดยใช้ข้อมูลสภาพอากาศตามตำแหน่งและเวลาที่เลือก",
     setupEyebrow: "ตั้งค่าการประเมิน",
@@ -78,7 +80,12 @@ const translations = {
     useGpsNow: "ใช้ GPS ตอนนี้",
     mapHint: "แตะบนแผนที่เพื่อเลือกตำแหน่ง ระบบจะอัปเดตข้อมูลอากาศตามพิกัดนี้ทันที",
     dateTime: "วันและเวลา",
+    date: "วัน",
+    time: "เวลา",
     bangkokTime: "เวลา Asia/Bangkok",
+    approximateAddress: "ที่อยู่โดยประมาณ",
+    addressLoading: "กำลังค้นหาที่อยู่โดยประมาณ...",
+    addressUnavailable: "ไม่พบข้อมูลที่อยู่โดยประมาณ",
     weather: "ข้อมูลสภาพอากาศ",
     selectedCoordinates: "พิกัดที่เลือก",
     gpsCoordinates: "ตำแหน่ง GPS ปัจจุบัน",
@@ -93,6 +100,7 @@ const translations = {
     clothingType: "ประเภทเสื้อผ้า",
     cafInfoLabel: "ข้อมูล CAF",
     cafInfo: "CAF ใช้ปรับค่า WBGT ตามผลของเสื้อผ้าต่อการระบายความร้อนของร่างกาย",
+    hoodCoverage: "หมวกคลุมศีรษะและคอเต็มรูปแบบ",
     activityLevel: "ระดับกิจกรรม",
     evaluateButton: "ดูผลการประเมิน",
     waitWeather: "รอข้อมูลสภาพอากาศ",
@@ -106,9 +114,9 @@ const translations = {
     moderate: "ปานกลาง",
     high: "สูง",
     veryHigh: "สูงมาก",
-    model: "โมเดล",
-    clothingCaf: "WBGT + CAF เสื้อผ้า",
-    feelsLike: "อุณหภูมิที่รู้สึก",
+    model: "ค่าความร้อนในสภาพแวดล้อมกลางแจ้ง",
+    clothingCaf: "ค่าความร้อน WBGT ที่ปรับตามชนิดเสื้อผ้าหรืออุปกรณ์ป้องกันที่สวมใส่",
+    feelsLike: "ค่าความร้อนที่ร่างกายรู้สึกจากอุณหภูมิอากาศและความชื้น",
     compareIndexes: "เปรียบเทียบค่าดัชนี",
     value: "ค่า",
     hourlyTrend: "แนวโน้มรายชั่วโมง",
@@ -131,7 +139,8 @@ const translations = {
     weatherError: "ไม่สามารถเตรียมข้อมูลสภาพอากาศได้",
   },
   en: {
-    appTitle: "Outdoor Heat Risk Assessment",
+    appEyebrow: "Heat Risk for Outdoor Work",
+    appTitle: "Heat risks when working outdoors.",
     aboutLabel: "About",
     aboutText: "This tool estimates outdoor heat risk using weather data for the selected location and time.",
     setupEyebrow: "Assessment Setup",
@@ -155,7 +164,12 @@ const translations = {
     useGpsNow: "Use GPS now",
     mapHint: "Tap the map to choose a location. Weather data will update for this coordinate.",
     dateTime: "Date and Time",
+    date: "Date",
+    time: "Time",
     bangkokTime: "Asia/Bangkok time",
+    approximateAddress: "Approximate Address",
+    addressLoading: "Looking up approximate address...",
+    addressUnavailable: "Approximate address not found",
     weather: "Weather Data",
     selectedCoordinates: "Selected coordinates",
     gpsCoordinates: "Current GPS location",
@@ -170,6 +184,7 @@ const translations = {
     clothingType: "Clothing Type",
     cafInfoLabel: "CAF information",
     cafInfo: "CAF adjusts WBGT based on how clothing affects body heat dissipation.",
+    hoodCoverage: "Full head and neck hood",
     activityLevel: "Activity Level",
     evaluateButton: "View Assessment",
     waitWeather: "Waiting for weather data",
@@ -183,9 +198,9 @@ const translations = {
     moderate: "Moderate",
     high: "High",
     veryHigh: "Very High",
-    model: "Model",
-    clothingCaf: "WBGT + clothing CAF",
-    feelsLike: "Feels-like temperature",
+    model: "Outdoor environmental heat level",
+    clothingCaf: "WBGT adjusted by clothing type or worn protective equipment",
+    feelsLike: "Heat felt by the body based on air temperature and humidity",
     compareIndexes: "Index Comparison",
     value: "Value",
     hourlyTrend: "Hourly Trend",
@@ -218,48 +233,39 @@ const MAP_MARKER_ICON = L.divIcon({
 
 const clothingOptions = [
   {
-    id: "light_clothing",
-    label: "เสื้อผ้าเบา",
-    labelEn: "Light Clothing",
-    example: "เสื้อยืด กางเกงขาสั้น",
-    exampleEn: "T-shirt, shorts",
-    caf: 0,
+    id: "short_sleeve_long_pants",
+    label: "เสื้อแขนสั้นและกางเกงขายาว",
+    labelEn: "Short-sleeve shirt and long pants",
+    example: "เสื้อแขนสั้นกับกางเกงขายาว",
+    exampleEn: "Short-sleeve shirt with long pants",
+    caf: -1,
     icon: Shirt,
   },
   {
-    id: "long_thick",
-    label: "แขนยาว/ผ้าหนา",
-    labelEn: "Long Sleeve / Thick Clothing",
-    example: "เสื้อแขนยาว กางเกงขายาว",
-    exampleEn: "Long sleeves, long pants",
-    caf: 1,
-    icon: Layers,
-  },
-  {
-    id: "work_coverall",
-    label: "ชุดทำงาน/ชุดคลุม",
-    labelEn: "Work Clothing / Coverall",
-    example: "ยูนิฟอร์ม ชุดคลุมหลายชั้น",
-    exampleEn: "Uniform, layered clothing",
-    caf: 3,
+    id: "standard_work_clothing",
+    label: "ชุดทำงานทั่วไป",
+    labelEn: "Standard work clothing",
+    example: "เสื้อแขนยาวและกางเกงขายาว หรือชุดคลุมทั้งตัว",
+    exampleEn: "Long-sleeve shirt and long pants, or full-body coverall",
+    caf: 0,
     icon: ShieldCheck,
   },
   {
-    id: "waterproof_chemical",
-    label: "กันน้ำ/กันสารเคมี",
-    labelEn: "Waterproof / Chemical Protective",
-    example: "เสื้อกันฝน ชุดไม่ระบายอากาศ",
-    exampleEn: "Raincoat, impermeable suit",
-    caf: 6,
-    icon: CloudRain,
+    id: "synthetic_coverall",
+    label: "ชุดคลุมทั้งตัวผ้าใยสังเคราะห์",
+    labelEn: "Synthetic full-body coverall",
+    example: "ชุดคลุมทั้งตัวที่ทำจากผ้าใยสังเคราะห์",
+    exampleEn: "Full-body coverall made from synthetic fabric",
+    caf: 0.5,
+    icon: Layers,
   },
   {
-    id: "full_ppe",
-    label: "PPE เต็มชุด",
-    labelEn: "Full PPE",
-    example: "อุปกรณ์ป้องกันเต็มรูปแบบ",
-    exampleEn: "Full protective gear",
-    caf: 8,
+    id: "multiple_layers",
+    label: "สวมเสื้อผ้ามากกว่าสองชิ้นขึ้นไป",
+    labelEn: "More than two clothing layers",
+    example: "สวมเสื้อผ้าหลายชั้นหรืออุปกรณ์ป้องกันร่วมกัน",
+    exampleEn: "Multiple clothing layers or combined protective equipment",
+    caf: 3,
     icon: Shield,
   },
 ];
@@ -267,8 +273,8 @@ const clothingOptions = [
 const activityOptions = [
   {
     id: "light",
-    label: "กิจกรรมเบา",
-    labelEn: "Light",
+    label: "งานเบา",
+    labelEn: "Light work",
     modifier: 0,
     icon: Route,
     description: "เดินช้า งานตรวจพื้นที่ งานใช้แรงน้อย หรือกิจกรรมที่หยุดพักได้บ่อย",
@@ -276,8 +282,8 @@ const activityOptions = [
   },
   {
     id: "moderate",
-    label: "ปานกลาง",
-    labelEn: "Moderate",
+    label: "งานปานกลาง",
+    labelEn: "Moderate work",
     modifier: 1,
     icon: Activity,
     description: "เดินต่อเนื่อง ยกของเบา ทำสวน งานภาคสนามทั่วไป หรือออกกำลังกายระดับกลาง",
@@ -285,8 +291,8 @@ const activityOptions = [
   },
   {
     id: "heavy",
-    label: "หนัก",
-    labelEn: "Heavy",
+    label: "งานหนัก",
+    labelEn: "Heavy work",
     modifier: 2.2,
     icon: ThermometerSun,
     description: "วิ่ง งานก่อสร้างหนัก ขุด ยกของหนัก หรือกิจกรรมที่ใช้แรงต่อเนื่อง",
@@ -358,19 +364,19 @@ const weatherMetrics = [
 ];
 
 const recommendations = {
-  low: ["ดื่มน้ำสม่ำเสมอ", "สังเกตอาการผิดปกติเมื่อทำกิจกรรมต่อเนื่อง"],
-  moderate: ["พักในร่มทุก 45-60 นาที", "เตรียมน้ำดื่มและลดกิจกรรมช่วงแดดจัด"],
-  high: ["ลดความหนักของงาน", "พักในร่มทุก 30 นาที", "ติดตามอาการเวียนศีรษะ คลื่นไส้ หรือเป็นตะคริว"],
-  veryHigh: ["หลีกเลี่ยงงานกลางแจ้งหากไม่จำเป็น", "จัดเวรพักและมีผู้ดูแลร่วม", "หยุดกิจกรรมทันทีหากมีอาการลมแดด"],
-  extreme: ["งดกิจกรรมกลางแจ้งที่ไม่เร่งด่วน", "ต้องมีแผนฉุกเฉินและพื้นที่ทำความเย็น", "แจ้งหัวหน้างานหรือเจ้าหน้าที่หากมีอาการผิดปกติ"],
+  low: ["Caution: ดื่มน้ำบ่อยๆ", "ลดกิจกรรมหนักกลางแจ้ง", "อาจอ่อนเพลียและเหนื่อยง่าย"],
+  moderate: ["Extreme Caution: เพิ่มระยะเวลาพัก", "อาจเกิดตะคริวหรือหน้ามืด", "ดื่มน้ำทุก 15-20 นาที", "ลดความหนักของงาน", "ควรมีเพื่อนร่วมงานสังเกตอาการกัน"],
+  high: ["Danger: อาจเกิดตะคริวแดด อ่อนเพลีย และ heat stroke", "ควรหลีกเลี่ยงงานหนัก", "มีจุดดื่มน้ำเย็น", "ติดตามอาการอย่างใกล้ชิด"],
+  veryHigh: ["Extreme Danger: อาจเกิด heat stroke", "ให้หยุดงานกลางแจ้ง", "หากมีอาการสับสน หมดสติ ตัวร้อนจัด หรือเหงื่อไม่ออก รีบแจ้งแพทย์ โทร 1669"],
+  extreme: ["Extreme Danger: อาจเกิด heat stroke", "ให้หยุดงานกลางแจ้ง", "หากมีอาการสับสน หมดสติ ตัวร้อนจัด หรือเหงื่อไม่ออก รีบแจ้งแพทย์ โทร 1669"],
 };
 
 const recommendationsEn = {
-  low: ["Drink water regularly.", "Watch for unusual symptoms during prolonged activity."],
-  moderate: ["Rest in shade every 45-60 minutes.", "Prepare drinking water and reduce activity during peak sun."],
-  high: ["Reduce work intensity.", "Rest in shade every 30 minutes.", "Watch for dizziness, nausea, or cramps."],
-  veryHigh: ["Avoid outdoor work unless necessary.", "Set up rest rotations and buddy monitoring.", "Stop activity immediately if heat illness symptoms appear."],
-  extreme: ["Cancel non-essential outdoor activity.", "Prepare an emergency plan and cooling area.", "Notify a supervisor or staff member if symptoms appear."],
+  low: ["Caution: drink water frequently.", "Reduce strenuous outdoor activity.", "Fatigue and easy tiredness may occur."],
+  moderate: ["Extreme Caution: increase rest time.", "Heat cramps or dizziness may occur.", "Drink water every 15-20 minutes.", "Reduce work intensity.", "Co-workers should monitor each other for symptoms."],
+  high: ["Danger: heat cramps, heat exhaustion, and heat stroke may occur.", "Avoid heavy work.", "Provide cool drinking water points.", "Monitor symptoms closely."],
+  veryHigh: ["Extreme Danger: heat stroke may occur.", "Stop outdoor work.", "If confusion, loss of consciousness, very hot body, or no sweating occurs, seek medical help immediately."],
+  extreme: ["Extreme Danger: heat stroke may occur.", "Stop outdoor work.", "If confusion, loss of consciousness, very hot body, or no sweating occurs, seek medical help immediately."],
 };
 
 const fallbackWeather = {
@@ -399,11 +405,19 @@ function getDefaultBangkokDateTime() {
   }).formatToParts(new Date());
 
   const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}T${value.hour}:${value.minute}`;
+  return `${value.year}-${value.month}-${value.day}T${value.hour}:00`;
 }
 
 function getDatePart(datetimeLocal) {
   return datetimeLocal ? datetimeLocal.slice(0, 10) : "";
+}
+
+function getTimePart(datetimeLocal) {
+  return datetimeLocal ? datetimeLocal.slice(11, 16) : "00:00";
+}
+
+function combineDateTime(date, time) {
+  return `${date}T${time}`;
 }
 
 function getHourOfDay(datetimeLocal) {
@@ -569,6 +583,42 @@ function apiUrl(path) {
   return `${WBGT_API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+async function reverseGeocode(lat, lon, language) {
+  const url = new URL("https://nominatim.openstreetmap.org/reverse");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("lat", lat);
+  url.searchParams.set("lon", lon);
+  url.searchParams.set("zoom", "16");
+  url.searchParams.set("addressdetails", "1");
+  url.searchParams.set("accept-language", language === "en" ? "en" : "th");
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error("Address lookup unavailable");
+  }
+
+  return data;
+}
+
+function formatApproxAddress(data, language) {
+  const address = data?.address ?? {};
+  const parts = [
+    address.village ?? address.hamlet ?? address.neighbourhood ?? address.suburb,
+    address.subdistrict ?? address.quarter,
+    address.city_district ?? address.district ?? address.county,
+    address.city ?? address.town ?? address.municipality,
+    address.state ?? address.province,
+  ].filter(Boolean);
+
+  if (parts.length > 0) {
+    return [...new Set(parts)].join(language === "en" ? ", " : " ");
+  }
+
+  return data?.display_name ?? "";
+}
+
 function buildModelFeatures(weather, hour, latitude, longitude) {
   return {
     Temperature_2m: weather.temp,
@@ -668,7 +718,7 @@ async function buildRealTrendData({ rawWeather, date, latitude, longitude, caf }
 
     return {
       time: `${String(item.hour).padStart(2, "0")}:00`,
-      WBGT: Number(wbgt.toFixed(1)),
+      WBGTout: Number(wbgt.toFixed(1)),
       "Effective WBGT": Number(effectiveWbgt.toFixed(1)),
       "Heat Index": Number(heatIndexCelsius(item.weather.temp, item.weather.humidity).toFixed(1)),
     };
@@ -700,7 +750,9 @@ function buildPrediction(form, backendWbgt, weatherInput) {
   const clothing = clothingOptions.find((item) => item.id === form.clothing) ?? clothingOptions[0];
   const activity = activityOptions.find((item) => item.id === form.activity) ?? activityOptions[1];
   const baseWbgt = backendWbgt ?? (weather.wetBulb * 0.72 + weather.temp * 0.2 + 6.4);
-  const effectiveWbgt = baseWbgt + clothing.caf;
+  const hoodCaf = form.hoodCoverage ? 1 : 0;
+  const totalCaf = clothing.caf + hoodCaf;
+  const effectiveWbgt = baseWbgt + totalCaf;
   const heatIndex = heatIndexCelsius(weather.temp, weather.humidity);
   const risk = classifyRisk(effectiveWbgt + activity.modifier);
 
@@ -710,7 +762,8 @@ function buildPrediction(form, backendWbgt, weatherInput) {
     activity,
     cafOutput: {
       clothing_type: clothing.id,
-      caf: clothing.caf,
+      hood_coverage: form.hoodCoverage,
+      caf: totalCaf,
     },
     wbgt: baseWbgt,
     effectiveWbgt,
@@ -798,6 +851,7 @@ function createHistoryRecord({ form, prediction, latitude, longitude, apiStatus,
     longitude,
     locationMode: form.mode,
     clothingId: prediction.clothing.id,
+    hoodCoverage: Boolean(prediction.cafOutput.hood_coverage),
     activityId: prediction.activity.id,
     wbgt: Number(prediction.wbgt.toFixed(2)),
     effectiveWbgt: Number(prediction.effectiveWbgt.toFixed(2)),
@@ -818,7 +872,8 @@ function App() {
     latitude: DEFAULT_COORDINATES.latitude.toFixed(6),
     longitude: DEFAULT_COORDINATES.longitude.toFixed(6),
     datetime: getDefaultBangkokDateTime(),
-    clothing: "light_clothing",
+    clothing: "standard_work_clothing",
+    hoodCoverage: false,
     activity: "moderate",
   });
   const [view, setView] = useState("assess");
@@ -836,6 +891,11 @@ function App() {
   const [weatherState, setWeatherState] = useState({
     status: "idle",
     data: null,
+    error: "",
+  });
+  const [addressState, setAddressState] = useState({
+    status: "idle",
+    text: "",
     error: "",
   });
   const [apiStatus, setApiStatus] = useState(() => translations[loadLanguage()].fillInfo);
@@ -921,13 +981,19 @@ function App() {
   }
 
   const chartData = [
-    { name: "WBGT", value: Number(result.wbgt.toFixed(1)), fill: "#1476d4" },
+    { name: "WBGTout", value: Number(result.wbgt.toFixed(1)), fill: "#1476d4" },
     { name: "Effective", value: Number(result.effectiveWbgt.toFixed(1)), fill: "#f26b2f" },
     { name: "Heat Index", value: Number(result.heatIndex.toFixed(1)), fill: "#e62e42" },
   ];
 
   const trendData = trendState.data;
   const selectedDateLabel = formatDateLabel(form.datetime, language);
+  const selectedDate = getDatePart(form.datetime);
+  const selectedTime = getTimePart(form.datetime);
+  const timeOptions = useMemo(
+    () => Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, "0")}:00`),
+    [],
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -956,6 +1022,40 @@ function App() {
     };
   }, [canShowWeatherContext, weatherCoordinates?.lat, weatherCoordinates?.lon, selectedWeatherDate]);
 
+  useEffect(() => {
+    let ignore = false;
+
+    if (form.mode !== "manual" || !hasValidManualCoordinates) {
+      setAddressState({ status: "idle", text: "", error: "" });
+      return undefined;
+    }
+
+    setAddressState({ status: "loading", text: "", error: "" });
+
+    reverseGeocode(manualLatitude, manualLongitude, language)
+      .then((data) => {
+        if (ignore) {
+          return;
+        }
+
+        const text = formatApproxAddress(data, language);
+        setAddressState(
+          text
+            ? { status: "success", text, error: "" }
+            : { status: "error", text: "", error: t.addressUnavailable },
+        );
+      })
+      .catch(() => {
+        if (!ignore) {
+          setAddressState({ status: "error", text: "", error: t.addressUnavailable });
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [form.mode, hasValidManualCoordinates, manualLatitude, manualLongitude, language, t.addressUnavailable]);
+
   function resetEvaluation() {
     evaluationRunRef.current += 1;
     setHasEvaluated(false);
@@ -968,6 +1068,14 @@ function App() {
   function updateForm(key, value) {
     resetEvaluation();
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateDate(value) {
+    updateForm("datetime", combineDateTime(value, selectedTime));
+  }
+
+  function updateTime(value) {
+    updateForm("datetime", combineDateTime(selectedDate, value));
   }
 
   function requestGpsLocation() {
@@ -1061,6 +1169,7 @@ function App() {
         location_source: form.mode === "gps" ? "gps" : "manual_coordinates",
         datetime: form.datetime,
         clothing_type: result.cafOutput.clothing_type,
+        hood_coverage: result.cafOutput.hood_coverage,
         caf: result.cafOutput.caf,
         activity_level: form.activity,
         weather_source: weather.source ?? "mock",
@@ -1155,7 +1264,7 @@ function App() {
           <Sun size={28} strokeWidth={2.4} />
         </div>
         <div>
-          <p className="eyebrow">Outdoor Heat Risk</p>
+          <p className="eyebrow">{t.appEyebrow}</p>
           <h1>{t.appTitle}</h1>
         </div>
         <div className="top-actions">
@@ -1294,6 +1403,15 @@ function App() {
                       <strong>{hasValidManualCoordinates ? manualLongitude.toFixed(6) : "-"}</strong>
                     </div>
                   </div>
+                  <div className="address-readout">
+                    <span>{t.approximateAddress}</span>
+                    <strong>
+                      {addressState.status === "loading" && t.addressLoading}
+                      {addressState.status === "success" && addressState.text}
+                      {addressState.status === "error" && t.addressUnavailable}
+                      {addressState.status === "idle" && "-"}
+                    </strong>
+                  </div>
                   <p className="map-hint">{t.mapHint}</p>
                 </div>
               )}
@@ -1301,14 +1419,25 @@ function App() {
 
             <fieldset>
               <legend><CalendarClock size={18} /> {t.dateTime}</legend>
-              <label>
-                {t.bangkokTime}
-                <input
-                  type="datetime-local"
-                  value={form.datetime}
-                  onChange={(event) => updateForm("datetime", event.target.value)}
-                />
-              </label>
+              <div className="datetime-grid">
+                <label>
+                  {t.date}
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(event) => updateDate(event.target.value)}
+                  />
+                </label>
+                <label>
+                  {t.time}
+                  <select value={selectedTime} onChange={(event) => updateTime(event.target.value)}>
+                    {timeOptions.map((time) => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <p className="field-hint">{t.bangkokTime}</p>
             </fieldset>
 
             {canShowWeatherContext && (
@@ -1417,6 +1546,15 @@ function App() {
                   );
                 })}
               </div>
+              <label className="hood-checkbox">
+                <input
+                  type="checkbox"
+                  checked={form.hoodCoverage}
+                  onChange={(event) => updateForm("hoodCoverage", event.target.checked)}
+                />
+                <span><Umbrella size={18} /> {t.hoodCoverage}</span>
+                <strong>+1°C</strong>
+              </label>
             </fieldset>
 
             <fieldset>
@@ -1508,9 +1646,33 @@ function App() {
               </div>
 
               <div className="index-grid">
-                <IndexCard label="WBGT" sublabel={t.model} value={result.wbgt} tone="blue" />
-                <IndexCard label="Effective WBGT" sublabel={t.clothingCaf} value={result.effectiveWbgt} tone="orange" />
-                <IndexCard label="Heat Index" sublabel={t.feelsLike} value={result.heatIndex} tone="red" />
+                <IndexCard
+                  label={<WbgtOutLabel />}
+                  sublabel={t.model}
+                  value={result.wbgt}
+                  tone="blue"
+                  infoKey="index:wbgt"
+                  openInfo={openInfo}
+                  toggleInfo={toggleInfo}
+                />
+                <IndexCard
+                  label="Effective WBGT"
+                  sublabel={t.clothingCaf}
+                  value={result.effectiveWbgt}
+                  tone="orange"
+                  infoKey="index:effective"
+                  openInfo={openInfo}
+                  toggleInfo={toggleInfo}
+                />
+                <IndexCard
+                  label="Heat Index"
+                  sublabel={t.feelsLike}
+                  value={result.heatIndex}
+                  tone="red"
+                  infoKey="index:heat"
+                  openInfo={openInfo}
+                  toggleInfo={toggleInfo}
+                />
               </div>
             </div>
           )}
@@ -1551,7 +1713,7 @@ function App() {
                       <YAxis unit="°C" tick={{ fontSize: 12 }} />
                       <Tooltip formatter={(value, name) => [`${value} °C`, name]} />
                       <Legend />
-                      <Line type="monotone" dataKey="WBGT" stroke="#1476d4" strokeWidth={3} dot={false} />
+                      <Line type="monotone" dataKey="WBGTout" stroke="#1476d4" strokeWidth={3} dot={false} />
                       <Line type="monotone" dataKey="Effective WBGT" stroke="#f26b2f" strokeWidth={3} dot={false} />
                       <Line type="monotone" dataKey="Heat Index" stroke="#e62e42" strokeWidth={3} dot={false} />
                     </LineChart>
@@ -1623,7 +1785,7 @@ function App() {
                       {item.latitude.toFixed(5)}, {item.longitude.toFixed(5)}
                     </div>
                     <div className="history-index-grid">
-                      <div><span>WBGT</span><strong>{item.wbgt.toFixed(1)}°C</strong></div>
+                      <div><span>WBGTout</span><strong>{item.wbgt.toFixed(1)}°C</strong></div>
                       <div><span>Effective</span><strong>{item.effectiveWbgt.toFixed(1)}°C</strong></div>
                       <div><span>Heat Index</span><strong>{item.heatIndex.toFixed(1)}°C</strong></div>
                     </div>
@@ -1685,12 +1847,41 @@ function Metric({ icon: Icon, label, value, parameter, description, open, onTogg
   );
 }
 
-function IndexCard({ label, sublabel, value, tone }) {
+function WbgtOutLabel() {
+  return (
+    <>
+      WBGT<sub>out</sub>
+    </>
+  );
+}
+
+function IndexCard({ label, sublabel, value, tone, infoKey, openInfo, toggleInfo }) {
+  const open = openInfo === infoKey;
+
   return (
     <article className={`index-card ${tone}`}>
-      <span>{sublabel}</span>
+      <span>
+        {sublabel}
+        <button
+          className="index-info-button"
+          type="button"
+          aria-expanded={open}
+          aria-label="ข้อมูลดัชนี"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleInfo(infoKey);
+          }}
+        >
+          <Info size={13} />
+        </button>
+      </span>
       <h3>{label}</h3>
       <strong>{value.toFixed(1)}<small>°C</small></strong>
+      {open && (
+        <div className="index-tooltip" role="status">
+          {sublabel}
+        </div>
+      )}
     </article>
   );
 }

@@ -225,7 +225,7 @@ label {
 }
 
 select,
-input[type="datetime-local"],
+input[type="date"],
 input[type="number"] {
   display: block;
   width: 100%;
@@ -240,15 +240,28 @@ input[type="number"] {
   outline: none;
 }
 
-input[type="datetime-local"] {
+input[type="date"] {
   -webkit-appearance: none;
   appearance: none;
   inline-size: 100%;
 }
 
-input[type="datetime-local"]::-webkit-date-and-time-value {
+input[type="date"]::-webkit-date-and-time-value {
   min-height: 1.5em;
   text-align: left;
+}
+
+.datetime-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 10px;
+}
+
+.field-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 select:focus,
@@ -402,6 +415,27 @@ input:focus {
   margin-top: 2px;
   color: var(--ink);
   font-size: 14px;
+}
+
+.address-readout {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.address-readout span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.address-readout strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .map-hint {
@@ -587,6 +621,37 @@ input:focus {
 .clothing-card.active .caf-badge {
   background: #d9eaff;
   color: var(--blue);
+}
+
+.hood-checkbox {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.hood-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--blue);
+}
+
+.hood-checkbox span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.hood-checkbox strong {
+  color: var(--blue);
+  font-size: 13px;
 }
 
 .check-badge {
@@ -888,22 +953,60 @@ input:focus {
 }
 
 .index-card {
+  position: relative;
   min-height: 112px;
   padding: 14px;
   box-shadow: 0 10px 24px rgba(27, 66, 115, 0.1);
 }
 
 .index-card span {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
   min-height: 32px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 800;
+  line-height: 1.25;
 }
 
 .index-card h3 {
   margin: 0 0 8px;
   font-size: 14px;
+}
+
+.index-card h3 sub {
+  font-size: 0.7em;
+}
+
+.index-info-button {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--blue);
+}
+
+.index-tooltip {
+  position: absolute;
+  right: 10px;
+  bottom: calc(100% - 12px);
+  z-index: 25;
+  width: min(240px, calc(100vw - 40px));
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  color: #27364d;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
 }
 
 .index-card strong {
