@@ -1412,7 +1412,7 @@ function App() {
               )}
             </fieldset>
 
-            <fieldset>
+            <fieldset className="datetime-fieldset">
               <legend><CalendarClock size={18} /> {t.dateTime}</legend>
               <div className="datetime-grid">
                 <label>
