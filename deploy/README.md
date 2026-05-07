@@ -43,3 +43,14 @@ docker build \
 ```
 
 The backend image continues to use `backend/Dockerfile` and listens on port `10000`.
+
+## GHCR images
+
+GitHub Actions builds and pushes these images on every push to `main`:
+
+- `ghcr.io/ptrpspeen/wbgt-backend:latest`
+- `ghcr.io/ptrpspeen/wbgt-frontend:latest`
+- `ghcr.io/ptrpspeen/wbgt-backend:sha-<commit>`
+- `ghcr.io/ptrpspeen/wbgt-frontend:sha-<commit>`
+
+If Kubernetes reports `403 Forbidden` while pulling from GHCR, either make the GHCR packages public or add an `imagePullSecret` for GHCR to the `test-digitech` namespace.
