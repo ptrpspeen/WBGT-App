@@ -48,7 +48,7 @@ const DEFAULT_COORDINATES = {
   longitude: 101.335076,
 };
 
-const WBGT_API_BASE_URL = (import.meta.env.VITE_WBGT_API_BASE_URL ?? "https://wbgt-app-49xb.onrender.com").replace(/\/$/, "");
+const WBGT_API_BASE_URL = (import.meta.env.VITE_WBGT_API_BASE_URL ?? "/api").replace(/\/$/, "");
 const HISTORY_STORAGE_KEY = "wbgt-risk-history";
 const LANGUAGE_STORAGE_KEY = "wbgt-ui-language";
 const MAX_HISTORY_ITEMS = 20;

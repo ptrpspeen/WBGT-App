@@ -17,10 +17,10 @@ http://localhost:5173
 
 The app calls Open-Meteo directly from the browser for weather data without an API key, and calls the WBGT model API directly for prediction.
 
-Default API:
+Default API for Kubernetes / Argo CD deployment:
 
 ```text
-https://wbgt-app-49xb.onrender.com
+/api
 ```
 
 Override for local development:

@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: test-digitech
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/ptrpspeen/wbgt-backend
+    newTag: latest
+  - name: ghcr.io/ptrpspeen/wbgt-frontend
+    newTag: latest
+
+patches:
+  - path: patch-http-route-gateway.yaml
