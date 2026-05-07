@@ -5,6 +5,17 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      build_backend:
+        description: Build backend image
+        required: true
+        default: true
+        type: boolean
+      build_frontend:
+        description: Build frontend image
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -16,9 +27,33 @@ env:
   FRONTEND_IMAGE: ghcr.io/ptrpspeen/wbgt-frontend
 
 jobs:
+  changes:
+    name: Detect changed apps
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/build-images.yml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/build-images.yml'
+
   build-backend:
     name: Build backend image
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_backend) || (github.event_name == 'push' && needs.changes.outputs.backend == 'true') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,6 +91,8 @@ jobs:
   build-frontend:
     name: Build frontend image
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_frontend) || (github.event_name == 'push' && needs.changes.outputs.frontend == 'true') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
